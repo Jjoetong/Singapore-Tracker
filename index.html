@@ -30,10 +30,16 @@
         
         /* App Shell Lock: Prevents the entire page from bouncing/scrolling */
         html, body {
+            position: fixed; /* Physically locks the body to the viewport */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
             overflow: hidden; 
             overscroll-behavior: none; 
             background-color: #000;
@@ -53,6 +59,8 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect } = React;
 
+        const MYR_RATE = 3.50; 
+
         // --- INITIAL MOCK DATA ---
         const INITIAL_CATEGORIES = [
           { id: 'c1', name: 'Salary', type: 'income', icon: 'ph-fill ph-briefcase', color: 'text-amber-200', bg: 'bg-amber-500/10' },
@@ -69,13 +77,15 @@
         ];
 
         const INITIAL_BUDGETS = {
-          'c3': 1500, 'c4': 100, 'c5': 600, 'c6': 150, 'c7': 200, 'c8': 50, 'c9': 300, 'c11': 150
+          'c3': 1200, // Adjusted rent to 1200
+          'c4': 100, 'c5': 600, 'c6': 150, 'c7': 200, 'c8': 50, 'c9': 300, 'c11': 150
         };
 
         const INITIAL_TRANSACTIONS = [];
 
         const INITIAL_CARDS = [
-          { id: 'card1', name: 'UOB World Card', limit: 24000, currency: 'MYR', color: 'from-[#1a1c23] to-black', border: 'border-slate-800' }
+          // Store the limit natively in SGD so that when it multiplies by MYR_RATE (3.5), it displays exactly 24000
+          { id: 'card1', name: 'UOB World Card', limit: 24000 / MYR_RATE, currency: 'MYR', color: 'from-[#1a1c23] to-black', border: 'border-slate-800' }
         ];
 
         const MOCK_PORTFOLIO = [
@@ -85,6 +95,7 @@
           { id: 'p4', name: 'Physical Gold', ticker: 'GOLD', value: 0, change: 0, icon: 'ph-fill ph-globe', color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
         ];
 
+        // Ensure 0 baseline so chart accurately reflects progress starting from May 2026
         const MOCK_CHART_DATA = [
           { month: 'Dec', savings: 0, investments: 0 },
           { month: 'Jan', savings: 0, investments: 0 },
@@ -96,7 +107,6 @@
         // --- APP CONSTANTS & UTILS ---
         const VAULT_TARGET = 1000;
         const MILESTONE_TARGET = 100000;
-        const MYR_RATE = 3.50; 
 
         // Cross-Border Exchange Engine
         const CURRENCIES = {
@@ -120,6 +130,20 @@
           const [activeTab, setActiveTab] = useState('home');
           const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
           const [isTxModalOpen, setIsTxModalOpen] = useState(false);
+
+          // Stop rubber-banding on non-scrollable elements
+          useEffect(() => {
+            const handleTouchMove = (e) => {
+              const isScrollable = e.target.closest('.is-scrollable');
+              if (!isScrollable) {
+                if (e.cancelable) {
+                  e.preventDefault();
+                }
+              }
+            };
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            return () => document.removeEventListener('touchmove', handleTouchMove);
+          }, []);
 
           const formatMoney = (amount, customCurrency) => {
             if (isDiscreet) return '••••••';
@@ -161,11 +185,12 @@
                   totalExpenses += tx.amount;
                 }
 
+                // Everything internally tracked in base SGD, so we just use tx.amount
                 if (tx.categoryId === 'c10') {
-                   cardBalances.card1 = Math.max(0, cardBalances.card1 - (tx.amount * MYR_RATE));
+                   cardBalances.card1 = Math.max(0, cardBalances.card1 - tx.amount);
                    cashOutflow += tx.amount;
                 } else if (tx.paymentMethod === 'card1') {
-                   cardBalances.card1 += (tx.amount * MYR_RATE);
+                   cardBalances.card1 += tx.amount;
                 } else {
                    cashOutflow += tx.amount;
                 }
@@ -196,7 +221,7 @@
 
           if (!isUnlocked) {
             return (
-              <div className="absolute inset-0 w-full bg-[#040506] flex flex-col items-center justify-center text-slate-200 selection:bg-amber-500/30">
+              <div className="fixed inset-0 w-full bg-[#040506] flex flex-col items-center justify-center text-slate-200 selection:bg-amber-500/30">
                 <div onClick={() => { triggerHaptic(); setIsUnlocked(true); }} className="flex flex-col items-center cursor-pointer group active:scale-95 transition-transform">
                   <div className="w-24 h-24 rounded-full border border-amber-500/20 bg-amber-500/5 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(251,191,36,0.1)] group-hover:shadow-[0_0_40px_rgba(251,191,36,0.2)] transition-shadow">
                     <i className="ph-bold ph-fingerprint text-[48px] text-amber-500 animate-pulse font-light"></i>
@@ -209,7 +234,7 @@
           }
 
           return (
-            <div className="absolute inset-0 w-full bg-black text-slate-200 flex justify-center overflow-hidden font-sans selection:bg-amber-500/30">
+            <div className="fixed inset-0 w-full bg-black text-slate-200 flex justify-center overflow-hidden font-sans selection:bg-amber-500/30">
               <div className="w-full max-w-md bg-[#08090a] relative flex flex-col h-full shadow-2xl shadow-amber-900/5">
                 
                 <header className="flex-shrink-0 px-5 pt-12 pb-3 bg-[#08090a]/90 backdrop-blur-xl z-20 flex justify-between items-center border-b border-white/5">
@@ -227,8 +252,7 @@
                   </div>
                 </header>
 
-                {/* Added overscroll-contain to stop scroll leaking to the body */}
-                <main className="flex-1 overflow-y-auto overscroll-contain no-scrollbar px-5 pt-5 pb-20 relative">
+                <main className="flex-1 overflow-y-auto overscroll-contain no-scrollbar px-5 pt-5 pb-20 relative is-scrollable">
                   {activeTab === 'home' && <HomeTab calc={calculations} transactions={transactions} prefs={prefs} />}
                   {activeTab === 'budget' && <BudgetTab transactions={transactions} prefs={prefs} />}
                   {activeTab === 'invest' && <InvestTab calc={calculations} prefs={prefs} />}
@@ -383,7 +407,7 @@
             <div className="space-y-6 animate-in fade-in duration-500">
               <h2 className="text-2xl font-semibold text-slate-100 tracking-tight">Allocation</h2>
               
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              <div className="flex gap-2 overflow-x-auto overscroll-contain no-scrollbar pb-1 is-scrollable">
                 {['all', 'fixed', 'variable', 'investment'].map(f => (
                   <button 
                     key={f} onClick={() => setFilter(f)}
@@ -495,6 +519,29 @@
           const fireNumber = monthlyBurn * 12 * 25; 
           const fireProgress = Math.min(100, (calc.portfolioValue / fireNumber) * 100);
 
+          // SVG Chart Logic for Savings vs Investment
+          const currentSavings = calc.totalIncome - calc.totalExpenses;
+          const chartData = [
+            ...MOCK_CHART_DATA, 
+            { 
+              month: 'May', 
+              savings: currentSavings > 0 ? currentSavings : 0, 
+              investments: calc.pnlAdjustments
+            }
+          ];
+
+          // Determine scale boundaries dynamically
+          const maxVal = Math.max(...chartData.map(d => Math.max(d.savings, d.investments, 100)));
+          const minVal = Math.min(...chartData.map(d => Math.min(d.savings, d.investments, 0)));
+          const range = (maxVal - minVal) || 100;
+
+          // Helper coordinates map
+          const getX = (index) => (index / (chartData.length - 1)) * 100;
+          const getY = (val) => 60 - (((val - minVal) / range) * 50 + 5); 
+
+          const savingsPath = chartData.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.savings)}`).join(' ');
+          const investmentsPath = chartData.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.investments)}`).join(' ');
+
           return (
             <div className="space-y-6 animate-in fade-in duration-500 pb-8">
               <h2 className="text-2xl font-semibold text-slate-100 tracking-tight">Intelligence</h2>
@@ -511,6 +558,44 @@
                   <i className="ph-fill ph-target text-[40px] absolute -right-2 -bottom-2 text-emerald-500/10 pointer-events-none"></i>
                   <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] mb-1">F.I.R.E Progress</p>
                   <h3 className="text-3xl font-semibold tracking-tight text-emerald-400">{isDiscreet ? '••' : fireProgress.toFixed(2)}%</h3>
+                </div>
+              </div>
+
+              {/* Advanced Chart: Savings vs Investments */}
+              <div className="bg-[#12141a] p-6 rounded-[2rem] border border-white/5 relative">
+                <div className="flex justify-between items-end mb-8">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-200">Growth Trajectory</h3>
+                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.15em] mt-1">Savings vs PnL Delta</p>
+                  </div>
+                  <div className="flex gap-4 text-[9px] font-bold uppercase tracking-widest">
+                    <span className="flex items-center gap-1.5 text-slate-300"><div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div> Savings</span>
+                    <span className="flex items-center gap-1.5 text-emerald-400"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div> PnL</span>
+                  </div>
+                </div>
+
+                <div className="w-full relative h-48">
+                  <svg viewBox="0 0 100 60" className="w-full h-full overflow-visible" preserveAspectRatio="none">
+                    <line x1="0" y1="10" x2="100" y2="10" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" strokeDasharray="2" />
+                    <line x1="0" y1="30" x2="100" y2="30" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" strokeDasharray="2" />
+                    <line x1="0" y1="50" x2="100" y2="50" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" strokeDasharray="2" />
+                    
+                    <path d={savingsPath} fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d={investmentsPath} fill="none" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-[0_0_3px_rgba(52,211,153,0.8)]" />
+
+                    {chartData.map((d, i) => (
+                      <g key={`pts-${i}`}>
+                        <circle cx={getX(i)} cy={getY(d.savings)} r="1.5" fill="#0f1115" stroke="#cbd5e1" strokeWidth="0.8" />
+                        <circle cx={getX(i)} cy={getY(d.investments)} r="1.5" fill="#0f1115" stroke="#34d399" strokeWidth="0.8" />
+                      </g>
+                    ))}
+                  </svg>
+
+                  <div className="absolute -bottom-6 left-0 w-full flex justify-between text-[9px] font-bold text-slate-500 uppercase">
+                    {chartData.map((d, i) => (
+                      <span key={i} className="w-6 text-center -ml-3">{d.month}</span>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -620,8 +705,7 @@
 
           return (
             <div className="absolute inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-              {/* Added overscroll-contain to modal content */}
-              <div className="w-full bg-[#0a0b0e] rounded-t-[2.5rem] p-6 pb-12 border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] animate-in slide-in-from-bottom-full duration-300 max-h-[90vh] overflow-y-auto overscroll-contain no-scrollbar">
+              <div className="w-full bg-[#0a0b0e] rounded-t-[2.5rem] p-6 pb-12 border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] animate-in slide-in-from-bottom-full duration-300 max-h-[90vh] overflow-y-auto overscroll-contain no-scrollbar is-scrollable">
                 
                 <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6"></div>
 
@@ -632,7 +716,7 @@
                   </button>
                 </div>
 
-                <div className="flex bg-[#12141a] p-1.5 rounded-xl mb-6 border border-white/5 overflow-x-auto no-scrollbar gap-1">
+                <div className="flex bg-[#12141a] p-1.5 rounded-xl mb-6 border border-white/5 overflow-x-auto overscroll-contain no-scrollbar gap-1 is-scrollable">
                   <button onClick={() => { triggerHaptic(); setType('expense'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'expense' ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500'}`}>Expense</button>
                   <button onClick={() => { triggerHaptic(); setType('income'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'income' ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500'}`}>Income</button>
                   <button onClick={() => { triggerHaptic(); setType('profit'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'profit' ? 'bg-emerald-500/20 text-emerald-400 shadow-sm' : 'text-slate-500'}`}>Profit</button>
@@ -646,7 +730,7 @@
                       <span className="absolute left-0 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-600">$</span>
                       <input 
                         type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
-                        placeholder="0.00" autoFocus required
+                        placeholder="0.00" autoFocus required step="any"
                         className="w-full text-4xl font-semibold text-white bg-transparent border-b border-white/10 pl-7 pb-2 focus:outline-none focus:border-amber-500 transition-colors"
                       />
                     </div>
@@ -666,7 +750,7 @@
                     <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-3 block">
                       {type === 'profit' || type === 'loss' ? 'Select Asset' : 'Classification'}
                     </label>
-                    <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto no-scrollbar pb-2">
+                    <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto overscroll-contain no-scrollbar pb-2 is-scrollable">
                       {availableCategories.map(cat => (
                         <button
                           key={cat.id} type="button" onClick={() => { triggerHaptic(); setCategoryId(cat.id); }}
