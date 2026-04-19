@@ -1,723 +1,694 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  Home, 
-  PieChart, 
-  CreditCard, 
-  TrendingUp, 
-  LineChart,
-  Plus, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  X, 
-  Building,
-  Utensils,
-  Smartphone,
-  Car,
-  ShoppingBag,
-  Briefcase,
-  ShieldCheck,
-  Landmark,
-  Bitcoin,
-  Globe,
-  Lock,
-  ChevronRight,
-  Coins,
-  CircleDollarSign,
-  FileText,
-  Eye,
-  EyeOff,
-  Fingerprint,
-  Tag,
-  Zap,
-  Target
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <!-- iOS Native App Meta Tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Wealth" />
+    <meta name="theme-color" content="#08090a">
+    
+    <title>Private Wealth Dashboard</title>
 
-// --- INITIAL MOCK DATA ---
-const INITIAL_CATEGORIES = [
-  { id: 'c1', name: 'Salary', type: 'income', icon: Briefcase, color: 'text-amber-200', bg: 'bg-amber-500/10' },
-  { id: 'c2', name: 'Dividends', type: 'income', icon: TrendingUp, color: 'text-amber-200', bg: 'bg-amber-500/10' },
-  { id: 'c3', name: 'Rent (HDB/Condo)', type: 'fixed', icon: Building, color: 'text-slate-300', bg: 'bg-slate-500/10' },
-  { id: 'c4', name: 'SP Services', type: 'fixed', icon: ShieldCheck, color: 'text-slate-300', bg: 'bg-slate-500/10' },
-  { id: 'c5', name: 'Hawker & Dining', type: 'variable', icon: Utensils, color: 'text-slate-300', bg: 'bg-slate-500/10' },
-  { id: 'c6', name: 'MRT & Transport', type: 'variable', icon: Car, color: 'text-slate-300', bg: 'bg-slate-500/10' },
-  { id: 'c7', name: 'Shopping & Leisure', type: 'variable', icon: ShoppingBag, color: 'text-slate-300', bg: 'bg-slate-500/10' },
-  { id: 'c8', name: 'Telco & Subs', type: 'fixed', icon: Smartphone, color: 'text-slate-300', bg: 'bg-slate-500/10' },
-  { id: 'c9', name: 'Investments', type: 'investment', icon: Landmark, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  { id: 'c10', name: 'Card Payment', type: 'expense', icon: CreditCard, color: 'text-rose-400', bg: 'bg-rose-500/10' },
-  { id: 'c11', name: 'Income Tax (IRAS)', type: 'fixed', icon: FileText, color: 'text-slate-300', bg: 'bg-slate-500/10' }
-];
+    <!-- React & Tailwind CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons CDN -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-const INITIAL_BUDGETS = {
-  'c3': 1500, 'c4': 100, 'c5': 600, 'c6': 150, 'c7': 200, 'c8': 50, 'c9': 300, 'c11': 150
-};
-
-const INITIAL_TRANSACTIONS = [];
-
-const INITIAL_CARDS = [
-  { id: 'card1', name: 'UOB World Card', limit: 24000, currency: 'MYR', color: 'from-[#1a1c23] to-black', border: 'border-slate-800' }
-];
-
-const MOCK_PORTFOLIO = [
-  { id: 'p1', name: 'Bitcoin', ticker: 'BTC', value: 0, change: 0, icon: Bitcoin, color: 'text-amber-400', bg: 'bg-amber-400/10' },
-  { id: 'p2', name: 'Ethereum', ticker: 'ETH', value: 0, change: 0, icon: Coins, color: 'text-slate-300', bg: 'bg-slate-100/10' },
-  { id: 'p3', name: 'Ripple', ticker: 'XRP', value: 0, change: 0, icon: CircleDollarSign, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-  { id: 'p4', name: 'Physical Gold', ticker: 'GOLD', value: 0, change: 0, icon: Globe, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
-];
-
-const MOCK_CHART_DATA = [
-  { month: 'Dec', savings: 0, investments: 0 },
-  { month: 'Jan', savings: 0, investments: 0 },
-  { month: 'Feb', savings: 0, investments: 0 },
-  { month: 'Mar', savings: 0, investments: 0 },
-  { month: 'Apr', savings: 0, investments: 0 },
-];
-
-// --- APP CONSTANTS & UTILS ---
-const VAULT_TARGET = 1000;
-const MILESTONE_TARGET = 100000;
-const MYR_RATE = 3.50; // Used for specific card conversions (SGD to MYR)
-
-// Cross-Border Exchange Engine (Base SGD)
-const CURRENCIES = {
-  SGD: { rate: 1, locale: 'en-SG', symbol: 'S$' },
-  MYR: { rate: 3.50, locale: 'ms-MY', symbol: 'RM' },
-  USD: { rate: 0.74, locale: 'en-US', symbol: '$' }
-};
-
-// Haptic Feedback Engine
-const triggerHaptic = () => {
-  if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
-    window.navigator.vibrate(15);
-  }
-};
-
-// --- MAIN APP COMPONENT ---
-export default function App() {
-  // Security & Preferences State
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [isDiscreet, setIsDiscreet] = useState(false);
-  const [baseCurrency, setBaseCurrency] = useState('SGD');
-  
-  const [activeTab, setActiveTab] = useState('home');
-  const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
-  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
-
-  // Global Monetary Formatter
-  const formatMoney = (amount, customCurrency) => {
-    if (isDiscreet) return '••••••';
-    const targetCurrency = customCurrency || baseCurrency;
-    const config = CURRENCIES[targetCurrency];
-    const converted = amount * config.rate;
-    return new Intl.NumberFormat(config.locale, { style: 'currency', currency: targetCurrency, minimumFractionDigits: 2 }).format(converted);
-  };
-
-  const toggleCurrency = () => {
-    triggerHaptic();
-    const order = ['SGD', 'MYR', 'USD'];
-    setBaseCurrency(order[(order.indexOf(baseCurrency) + 1) % 3]);
-  };
-
-  // Derived State Calculations
-  const calculations = useMemo(() => {
-    let totalIncome = 0;
-    let totalExpenses = 0;
-    let thisMonthInvested = 0;
-    let pnlAdjustments = 0;
-    let cashOutflow = 0;
-    let cardBalances = { card1: 0 }; 
-    let assetBalances = { p1: 0, p2: 0, p3: 0, p4: 0 }; 
-
-    transactions.forEach(tx => {
-      if (tx.type === 'income') {
-        totalIncome += tx.amount;
-      } else if (tx.type === 'pnl_profit') {
-        pnlAdjustments += tx.amount;
-        if (assetBalances[tx.categoryId] !== undefined) assetBalances[tx.categoryId] += tx.amount;
-      } else if (tx.type === 'pnl_loss') {
-        pnlAdjustments -= tx.amount;
-        if (assetBalances[tx.categoryId] !== undefined) assetBalances[tx.categoryId] -= tx.amount;
-      } else {
-        const cat = INITIAL_CATEGORIES.find(c => c.id === tx.categoryId);
-        if (cat?.type === 'investment') {
-          thisMonthInvested += tx.amount;
-        } else {
-          totalExpenses += tx.amount;
-        }
-
-        // Card vs Cash Logic
-        if (tx.categoryId === 'c10') {
-           cardBalances.card1 = Math.max(0, cardBalances.card1 - (tx.amount * MYR_RATE));
-           cashOutflow += tx.amount;
-        } else if (tx.paymentMethod === 'card1') {
-           cardBalances.card1 += (tx.amount * MYR_RATE);
-        } else {
-           cashOutflow += tx.amount;
-        }
-      }
-    });
-
-    const rawLiquidCash = totalIncome - cashOutflow;
-    const vaultBalance = Math.min(rawLiquidCash, VAULT_TARGET);
-    const availableCash = Math.max(0, rawLiquidCash - VAULT_TARGET);
-
-    const basePortfolio = MOCK_PORTFOLIO.reduce((sum, item) => sum + item.value, 0);
-    const portfolioValue = basePortfolio + pnlAdjustments;
-    const netWorth = rawLiquidCash + portfolioValue;
-
-    return { 
-      totalIncome, totalExpenses, thisMonthInvested, 
-      rawLiquidCash, vaultBalance, availableCash, 
-      portfolioValue, netWorth, pnlAdjustments, cardBalances, assetBalances 
-    };
-  }, [transactions]);
-
-  const handleAddTransaction = (newTx) => {
-    setTransactions(prev => [{ ...newTx, id: Date.now() }, ...prev].sort((a, b) => new Date(b.date) - new Date(a.date)));
-    setIsTxModalOpen(false);
-  };
-
-  // Pass necessary props down to tabs cleanly
-  const prefs = { isDiscreet, formatMoney, baseCurrency, toggleCurrency, triggerHaptic };
-
-  // BIOMETRIC LOCK SCREEN
-  if (!isUnlocked) {
-    return (
-      <div className="h-[100dvh] w-full bg-[#040506] flex flex-col items-center justify-center text-slate-200 selection:bg-amber-500/30">
-        <div 
-          onClick={() => { triggerHaptic(); setIsUnlocked(true); }}
-          className="flex flex-col items-center cursor-pointer group active:scale-95 transition-transform"
-        >
-          <div className="w-24 h-24 rounded-full border border-amber-500/20 bg-amber-500/5 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(251,191,36,0.1)] group-hover:shadow-[0_0_40px_rgba(251,191,36,0.2)] transition-shadow">
-            <Fingerprint size={48} className="text-amber-500 animate-pulse" strokeWidth={1.5} />
-          </div>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">FaceID Auth</p>
-          <p className="text-xs text-slate-600 mt-2 font-medium">Tap to decrypt vault</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-[100dvh] w-full bg-black text-slate-200 flex justify-center overflow-hidden font-sans selection:bg-amber-500/30">
-      <style dangerouslySetInnerHTML={{__html: `
+    <style>
+        /* Force kill all scrollbars while keeping scroll functionality */
         .no-scrollbar::-webkit-scrollbar { display: none !important; }
         .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
         *::-webkit-scrollbar { display: none !important; }
         * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
-      `}} />
-      
-      <div className="w-full max-w-md bg-[#08090a] relative flex flex-col h-full shadow-2xl shadow-amber-900/5">
         
-        {/* Fixed Header */}
-        <header className="flex-shrink-0 px-5 pt-10 pb-3 bg-[#08090a]/90 backdrop-blur-xl z-20 flex justify-between items-center border-b border-white/5">
-          <div>
-            <p className="text-[9px] font-bold text-amber-500/80 uppercase tracking-[0.2em]">Private Wealth</p>
-            <h1 className="text-xl font-semibold text-slate-100 tracking-tight mt-0.5">Welcome, Commander</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => { triggerHaptic(); setIsDiscreet(!isDiscreet); }} 
-              className="text-slate-400 hover:text-amber-400 transition-colors active:scale-90"
-            >
-              {isDiscreet ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400/20 to-amber-600/5 border border-amber-500/20 flex items-center justify-center relative shadow-[0_0_15px_rgba(251,191,36,0.1)]">
-              <span className="text-[10px] font-bold text-amber-200">JO</span>
-            </div>
-          </div>
-        </header>
+        body {
+            background-color: #000;
+            -webkit-tap-highlight-color: transparent; /* Removes touch flash on iOS */
+            touch-action: pan-x pan-y; /* Optimize touch actions */
+        }
+    </style>
+</head>
+<body class="bg-black text-white antialiased">
+    <div id="root"></div>
 
-        {/* Scrollable Main Content Area */}
-        <main className="flex-1 overflow-y-auto no-scrollbar px-5 pt-5 pb-20 relative">
-          {activeTab === 'home' && <HomeTab calc={calculations} transactions={transactions} prefs={prefs} />}
-          {activeTab === 'budget' && <BudgetTab transactions={transactions} prefs={prefs} />}
-          {activeTab === 'invest' && <InvestTab calc={calculations} prefs={prefs} />}
-          {activeTab === 'insights' && <InsightsTab calc={calculations} prefs={prefs} />}
-          {activeTab === 'cards' && <CardsTab calc={calculations} prefs={prefs} />}
-        </main>
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
 
-        {/* Floating Action Button */}
-        <button 
-          onClick={() => { triggerHaptic(); setIsTxModalOpen(true); }}
-          className="absolute bottom-20 right-5 w-12 h-12 bg-gradient-to-br from-amber-200 to-amber-500 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.3)] flex items-center justify-center text-black active:scale-95 transition-transform z-30"
-        >
-          <Plus size={24} strokeWidth={2.5} />
-        </button>
+        // --- INITIAL MOCK DATA ---
+        const INITIAL_CATEGORIES = [
+          { id: 'c1', name: 'Salary', type: 'income', icon: 'ph-fill ph-briefcase', color: 'text-amber-200', bg: 'bg-amber-500/10' },
+          { id: 'c2', name: 'Dividends', type: 'income', icon: 'ph-fill ph-trend-up', color: 'text-amber-200', bg: 'bg-amber-500/10' },
+          { id: 'c3', name: 'Rent (HDB/Condo)', type: 'fixed', icon: 'ph-fill ph-buildings', color: 'text-slate-300', bg: 'bg-slate-500/10' },
+          { id: 'c4', name: 'SP Services', type: 'fixed', icon: 'ph-fill ph-shield-check', color: 'text-slate-300', bg: 'bg-slate-500/10' },
+          { id: 'c5', name: 'Hawker & Dining', type: 'variable', icon: 'ph-fill ph-fork-knife', color: 'text-slate-300', bg: 'bg-slate-500/10' },
+          { id: 'c6', name: 'MRT & Transport', type: 'variable', icon: 'ph-fill ph-car', color: 'text-slate-300', bg: 'bg-slate-500/10' },
+          { id: 'c7', name: 'Shopping & Leisure', type: 'variable', icon: 'ph-fill ph-shopping-bag', color: 'text-slate-300', bg: 'bg-slate-500/10' },
+          { id: 'c8', name: 'Telco & Subs', type: 'fixed', icon: 'ph-fill ph-device-mobile', color: 'text-slate-300', bg: 'bg-slate-500/10' },
+          { id: 'c9', name: 'Investments', type: 'investment', icon: 'ph-fill ph-bank', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+          { id: 'c10', name: 'Card Payment', type: 'expense', icon: 'ph-fill ph-credit-card', color: 'text-rose-400', bg: 'bg-rose-500/10' },
+          { id: 'c11', name: 'Income Tax (IRAS)', type: 'fixed', icon: 'ph-fill ph-file-text', color: 'text-slate-300', bg: 'bg-slate-500/10' }
+        ];
 
-        {/* Fixed Bottom Navigation */}
-        <nav className="flex-shrink-0 h-16 bg-[#08090a]/95 backdrop-blur-xl border-t border-white/5 px-4 flex justify-between items-center z-20 pb-safe">
-          <NavItem icon={Home} label="Portfolio" isActive={activeTab === 'home'} onClick={() => { triggerHaptic(); setActiveTab('home'); }} />
-          <NavItem icon={PieChart} label="Budget" isActive={activeTab === 'budget'} onClick={() => { triggerHaptic(); setActiveTab('budget'); }} />
-          <NavItem icon={TrendingUp} label="Markets" isActive={activeTab === 'invest'} onClick={() => { triggerHaptic(); setActiveTab('invest'); }} />
-          <NavItem icon={Zap} label="Insights" isActive={activeTab === 'insights'} onClick={() => { triggerHaptic(); setActiveTab('insights'); }} />
-          <NavItem icon={CreditCard} label="Cards" isActive={activeTab === 'cards'} onClick={() => { triggerHaptic(); setActiveTab('cards'); }} />
-        </nav>
+        const INITIAL_BUDGETS = {
+          'c3': 1500, 'c4': 100, 'c5': 600, 'c6': 150, 'c7': 200, 'c8': 50, 'c9': 300, 'c11': 150
+        };
 
-        {/* Modals */}
-        {isTxModalOpen && (
-          <TransactionModal onClose={() => setIsTxModalOpen(false)} onSave={handleAddTransaction} prefs={prefs} />
-        )}
-      </div>
-    </div>
-  );
-}
+        const INITIAL_TRANSACTIONS = [];
 
-// --- TAB COMPONENTS ---
+        const INITIAL_CARDS = [
+          { id: 'card1', name: 'UOB World Card', limit: 24000, currency: 'MYR', color: 'from-[#1a1c23] to-black', border: 'border-slate-800' }
+        ];
 
-function HomeTab({ calc, transactions, prefs }) {
-  const { formatMoney, baseCurrency, toggleCurrency, triggerHaptic, isDiscreet } = prefs;
-  const recentTxs = transactions.slice(0, 5);
-  const goalProgress = Math.min(100, (calc.netWorth / MILESTONE_TARGET) * 100);
-  const vaultProgress = Math.min(100, (calc.vaultBalance / VAULT_TARGET) * 100);
+        const MOCK_PORTFOLIO = [
+          { id: 'p1', name: 'Bitcoin', ticker: 'BTC', value: 0, change: 0, icon: 'ph-fill ph-currency-btc', color: 'text-amber-400', bg: 'bg-amber-400/10' },
+          { id: 'p2', name: 'Ethereum', ticker: 'ETH', value: 0, change: 0, icon: 'ph-fill ph-coins', color: 'text-slate-300', bg: 'bg-slate-100/10' },
+          { id: 'p3', name: 'Ripple', ticker: 'XRP', value: 0, change: 0, icon: 'ph-fill ph-currency-circle-dollar', color: 'text-blue-400', bg: 'bg-blue-400/10' },
+          { id: 'p4', name: 'Physical Gold', ticker: 'GOLD', value: 0, change: 0, icon: 'ph-fill ph-globe', color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
+        ];
 
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Net Worth Card */}
-      <div className="bg-gradient-to-br from-[#12141a] to-[#0a0b0e] rounded-3xl p-7 border border-white/5 relative overflow-hidden shadow-2xl shadow-black">
-        <div className="absolute -top-10 -right-10 w-40 h-40 border border-white/5 rounded-full opacity-50 pointer-events-none"></div>
-        <div className="absolute -top-5 -right-5 w-32 h-32 border border-white/5 rounded-full opacity-30 pointer-events-none"></div>
-        
-        <div className="flex justify-between items-center mb-4 relative z-10">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em]">Global Net Worth</span>
-          <span className="px-2.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/5 text-[9px] font-bold text-amber-400 tracking-wider">MAY 2026</span>
-        </div>
-        
-        <div className="relative z-10 mb-8 cursor-pointer group" onClick={toggleCurrency}>
-          <h2 className="text-[2.5rem] leading-none font-semibold text-slate-100 tracking-tight flex items-baseline gap-1 group-active:scale-95 transition-transform">
-            {formatMoney(calc.netWorth)}
-          </h2>
-          <p className="text-[10px] font-bold text-amber-500 mt-2 tracking-[0.15em] uppercase flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
-            <Globe size={12} /> Displaying in {baseCurrency} (Tap to swap)
-          </p>
-        </div>
+        const MOCK_CHART_DATA = [
+          { month: 'Dec', savings: 0, investments: 0 },
+          { month: 'Jan', savings: 0, investments: 0 },
+          { month: 'Feb', savings: 0, investments: 0 },
+          { month: 'Mar', savings: 0, investments: 0 },
+          { month: 'Apr', savings: 0, investments: 0 },
+        ];
 
-        <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-5 relative z-10">
-          <div>
-            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] mb-1">Liquid Capital</p>
-            <p className="font-medium text-slate-200">{formatMoney(calc.availableCash)}</p>
-          </div>
-          <div>
-            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] mb-1">Investments</p>
-            <p className="font-medium text-slate-200">{formatMoney(calc.portfolioValue)}</p>
-          </div>
-        </div>
-      </div>
+        // --- APP CONSTANTS & UTILS ---
+        const VAULT_TARGET = 1000;
+        const MILESTONE_TARGET = 100000;
+        const MYR_RATE = 3.50; 
 
-      {/* S$1,000 Reserve Vault & Milestone */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-[#12141a] p-4 rounded-2xl border border-white/5 relative overflow-hidden group">
-          <div className="flex items-center gap-2 mb-3">
-            <div className={`p-1.5 rounded-lg ${vaultProgress >= 100 ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-400'}`}>
-              <Lock size={14} />
-            </div>
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Reserve Vault</h3>
-          </div>
-          <p className={`text-lg font-semibold mb-2 ${vaultProgress >= 100 ? 'text-amber-100' : 'text-slate-300'}`}>
-            {isDiscreet ? '•••' : (vaultProgress >= 100 ? 'Secured' : formatMoney(calc.vaultBalance).replace('.00', ''))}
-          </p>
-          <div className="w-full h-1 bg-black/50 rounded-full overflow-hidden">
-            <div className={`h-full transition-all duration-1000 ${vaultProgress >= 100 ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'bg-slate-500'}`} style={{ width: `${vaultProgress}%` }}></div>
-          </div>
-        </div>
+        // Cross-Border Exchange Engine
+        const CURRENCIES = {
+          SGD: { rate: 1, locale: 'en-SG', symbol: 'S$' },
+          MYR: { rate: 3.50, locale: 'ms-MY', symbol: 'RM' },
+          USD: { rate: 0.74, locale: 'en-US', symbol: '$' }
+        };
 
-        <div className="bg-[#12141a] p-4 rounded-2xl border border-white/5">
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">Centurion<br/>Milestone</h3>
-            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">{isDiscreet ? '••%' : `${goalProgress.toFixed(1)}%`}</span>
-          </div>
-          <p className="text-sm font-semibold text-slate-300 mb-2">{isDiscreet ? '••••' : formatMoney(calc.netWorth).replace(CURRENCIES[baseCurrency].symbol, '')} <span className="text-[10px] text-slate-600">/ 100k</span></p>
-          <div className="w-full h-1 bg-black/50 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${goalProgress}%` }}></div>
-          </div>
-        </div>
-      </div>
+        const triggerHaptic = () => {
+          if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(15);
+          }
+        };
 
-      {/* Ledger */}
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-widest">Ledger</h3>
-          <button className="text-[10px] font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1 active:scale-95">View All <ChevronRight size={12}/></button>
-        </div>
-        <div className="space-y-2">
-          {recentTxs.length === 0 ? (
-            <div className="p-6 bg-[#12141a]/60 rounded-2xl border border-white/5 text-center">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">No entries yet.</p>
-              <p className="text-xs text-slate-600 mt-1">Awaiting your first Singapore payload.</p>
-            </div>
-          ) : recentTxs.map(tx => {
-            const isInvestPnl = tx.type === 'pnl_profit' || tx.type === 'pnl_loss';
-            const cat = isInvestPnl ? MOCK_PORTFOLIO.find(p => p.id === tx.categoryId) : INITIAL_CATEGORIES.find(c => c.id === tx.categoryId);
-            const isPositive = tx.type === 'income' || tx.type === 'pnl_profit';
+        // --- MAIN APP COMPONENT ---
+        function App() {
+          const [isUnlocked, setIsUnlocked] = useState(false);
+          const [isDiscreet, setIsDiscreet] = useState(false);
+          const [baseCurrency, setBaseCurrency] = useState('SGD');
+          
+          const [activeTab, setActiveTab] = useState('home');
+          const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
+          const [isTxModalOpen, setIsTxModalOpen] = useState(false);
 
+          const formatMoney = (amount, customCurrency) => {
+            if (isDiscreet) return '••••••';
+            const targetCurrency = customCurrency || baseCurrency;
+            const config = CURRENCIES[targetCurrency];
+            const converted = amount * config.rate;
+            return new Intl.NumberFormat(config.locale, { style: 'currency', currency: targetCurrency, minimumFractionDigits: 2 }).format(converted);
+          };
+
+          const toggleCurrency = () => {
+            triggerHaptic();
+            const order = ['SGD', 'MYR', 'USD'];
+            setBaseCurrency(order[(order.indexOf(baseCurrency) + 1) % 3]);
+          };
+
+          const calculations = useMemo(() => {
+            let totalIncome = 0;
+            let totalExpenses = 0;
+            let thisMonthInvested = 0;
+            let pnlAdjustments = 0;
+            let cashOutflow = 0;
+            let cardBalances = { card1: 0 }; 
+            let assetBalances = { p1: 0, p2: 0, p3: 0, p4: 0 }; 
+
+            transactions.forEach(tx => {
+              if (tx.type === 'income') {
+                totalIncome += tx.amount;
+              } else if (tx.type === 'pnl_profit') {
+                pnlAdjustments += tx.amount;
+                if (assetBalances[tx.categoryId] !== undefined) assetBalances[tx.categoryId] += tx.amount;
+              } else if (tx.type === 'pnl_loss') {
+                pnlAdjustments -= tx.amount;
+                if (assetBalances[tx.categoryId] !== undefined) assetBalances[tx.categoryId] -= tx.amount;
+              } else {
+                const cat = INITIAL_CATEGORIES.find(c => c.id === tx.categoryId);
+                if (cat?.type === 'investment') {
+                  thisMonthInvested += tx.amount;
+                } else {
+                  totalExpenses += tx.amount;
+                }
+
+                if (tx.categoryId === 'c10') {
+                   cardBalances.card1 = Math.max(0, cardBalances.card1 - (tx.amount * MYR_RATE));
+                   cashOutflow += tx.amount;
+                } else if (tx.paymentMethod === 'card1') {
+                   cardBalances.card1 += (tx.amount * MYR_RATE);
+                } else {
+                   cashOutflow += tx.amount;
+                }
+              }
+            });
+
+            const rawLiquidCash = totalIncome - cashOutflow;
+            const vaultBalance = Math.min(rawLiquidCash, VAULT_TARGET);
+            const availableCash = Math.max(0, rawLiquidCash - VAULT_TARGET);
+
+            const basePortfolio = MOCK_PORTFOLIO.reduce((sum, item) => sum + item.value, 0);
+            const portfolioValue = basePortfolio + pnlAdjustments;
+            const netWorth = rawLiquidCash + portfolioValue;
+
+            return { 
+              totalIncome, totalExpenses, thisMonthInvested, 
+              rawLiquidCash, vaultBalance, availableCash, 
+              portfolioValue, netWorth, pnlAdjustments, cardBalances, assetBalances 
+            };
+          }, [transactions]);
+
+          const handleAddTransaction = (newTx) => {
+            setTransactions(prev => [{ ...newTx, id: Date.now() }, ...prev].sort((a, b) => new Date(b.date) - new Date(a.date)));
+            setIsTxModalOpen(false);
+          };
+
+          const prefs = { isDiscreet, formatMoney, baseCurrency, toggleCurrency, triggerHaptic };
+
+          if (!isUnlocked) {
             return (
-              <div key={tx.id} className="flex items-center justify-between p-4 bg-[#12141a]/60 rounded-2xl border border-white/5 hover:bg-[#12141a] transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${cat?.bg || 'bg-slate-800'}`}>
-                    {cat && <cat.icon size={18} className={cat.color} />}
+              <div className="h-[100dvh] w-full bg-[#040506] flex flex-col items-center justify-center text-slate-200 selection:bg-amber-500/30">
+                <div onClick={() => { triggerHaptic(); setIsUnlocked(true); }} className="flex flex-col items-center cursor-pointer group active:scale-95 transition-transform">
+                  <div className="w-24 h-24 rounded-full border border-amber-500/20 bg-amber-500/5 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(251,191,36,0.1)] group-hover:shadow-[0_0_40px_rgba(251,191,36,0.2)] transition-shadow">
+                    <i className="ph-bold ph-fingerprint text-[48px] text-amber-500 animate-pulse font-light"></i>
+                  </div>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">FaceID Auth</p>
+                  <p className="text-xs text-slate-600 mt-2 font-medium">Tap to decrypt vault</p>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div className="h-[100dvh] w-full bg-black text-slate-200 flex justify-center overflow-hidden font-sans selection:bg-amber-500/30">
+              <div className="w-full max-w-md bg-[#08090a] relative flex flex-col h-full shadow-2xl shadow-amber-900/5">
+                
+                <header className="flex-shrink-0 px-5 pt-12 pb-3 bg-[#08090a]/90 backdrop-blur-xl z-20 flex justify-between items-center border-b border-white/5">
+                  <div>
+                    <p className="text-[9px] font-bold text-amber-500/80 uppercase tracking-[0.2em]">Private Wealth</p>
+                    <h1 className="text-xl font-semibold text-slate-100 tracking-tight mt-0.5">Welcome, Commander</h1>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => { triggerHaptic(); setIsDiscreet(!isDiscreet); }} className="text-slate-400 hover:text-amber-400 transition-colors active:scale-90">
+                      {isDiscreet ? <i className="ph-bold ph-eye-slash text-[20px]"></i> : <i className="ph-bold ph-eye text-[20px]"></i>}
+                    </button>
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400/20 to-amber-600/5 border border-amber-500/20 flex items-center justify-center relative shadow-[0_0_15px_rgba(251,191,36,0.1)]">
+                      <span className="text-[10px] font-bold text-amber-200">JO</span>
+                    </div>
+                  </div>
+                </header>
+
+                <main className="flex-1 overflow-y-auto no-scrollbar px-5 pt-5 pb-20 relative">
+                  {activeTab === 'home' && <HomeTab calc={calculations} transactions={transactions} prefs={prefs} />}
+                  {activeTab === 'budget' && <BudgetTab transactions={transactions} prefs={prefs} />}
+                  {activeTab === 'invest' && <InvestTab calc={calculations} prefs={prefs} />}
+                  {activeTab === 'insights' && <InsightsTab calc={calculations} prefs={prefs} />}
+                  {activeTab === 'cards' && <CardsTab calc={calculations} prefs={prefs} />}
+                </main>
+
+                <button onClick={() => { triggerHaptic(); setIsTxModalOpen(true); }} className="absolute bottom-20 right-5 w-14 h-14 bg-gradient-to-br from-amber-200 to-amber-500 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.3)] flex items-center justify-center text-black active:scale-95 transition-transform z-30">
+                  <i className="ph-bold ph-plus text-[24px]"></i>
+                </button>
+
+                <nav className="flex-shrink-0 h-[80px] bg-[#08090a]/95 backdrop-blur-xl border-t border-white/5 px-2 flex justify-between items-center z-20 pb-safe">
+                  <NavItem icon="ph-fill ph-house" label="Portfolio" isActive={activeTab === 'home'} onClick={() => { triggerHaptic(); setActiveTab('home'); }} />
+                  <NavItem icon="ph-fill ph-chart-pie-slice" label="Budget" isActive={activeTab === 'budget'} onClick={() => { triggerHaptic(); setActiveTab('budget'); }} />
+                  <NavItem icon="ph-fill ph-trend-up" label="Markets" isActive={activeTab === 'invest'} onClick={() => { triggerHaptic(); setActiveTab('invest'); }} />
+                  <NavItem icon="ph-fill ph-lightning" label="Insights" isActive={activeTab === 'insights'} onClick={() => { triggerHaptic(); setActiveTab('insights'); }} />
+                  <NavItem icon="ph-fill ph-credit-card" label="Cards" isActive={activeTab === 'cards'} onClick={() => { triggerHaptic(); setActiveTab('cards'); }} />
+                </nav>
+
+                {isTxModalOpen && <TransactionModal onClose={() => setIsTxModalOpen(false)} onSave={handleAddTransaction} prefs={prefs} />}
+              </div>
+            </div>
+          );
+        }
+
+        // --- TAB COMPONENTS ---
+
+        function HomeTab({ calc, transactions, prefs }) {
+          const { formatMoney, baseCurrency, toggleCurrency, isDiscreet } = prefs;
+          const recentTxs = transactions.slice(0, 5);
+          const goalProgress = Math.min(100, (calc.netWorth / MILESTONE_TARGET) * 100);
+          const vaultProgress = Math.min(100, (calc.vaultBalance / VAULT_TARGET) * 100);
+
+          return (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <div className="bg-gradient-to-br from-[#12141a] to-[#0a0b0e] rounded-3xl p-7 border border-white/5 relative overflow-hidden shadow-2xl shadow-black">
+                <div className="absolute -top-10 -right-10 w-40 h-40 border border-white/5 rounded-full opacity-50 pointer-events-none"></div>
+                <div className="absolute -top-5 -right-5 w-32 h-32 border border-white/5 rounded-full opacity-30 pointer-events-none"></div>
+                
+                <div className="flex justify-between items-center mb-4 relative z-10">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em]">Global Net Worth</span>
+                  <span className="px-2.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/5 text-[9px] font-bold text-amber-400 tracking-wider">MAY 2026</span>
+                </div>
+                
+                <div className="relative z-10 mb-8 cursor-pointer group" onClick={toggleCurrency}>
+                  <h2 className="text-[2.5rem] leading-none font-semibold text-slate-100 tracking-tight flex items-baseline gap-1 group-active:scale-95 transition-transform">
+                    {formatMoney(calc.netWorth)}
+                  </h2>
+                  <p className="text-[10px] font-bold text-amber-500 mt-2 tracking-[0.15em] uppercase flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                    <i className="ph-fill ph-globe text-[12px]"></i> Displaying in {baseCurrency} (Tap to swap)
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-5 relative z-10">
+                  <div>
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] mb-1">Liquid Capital</p>
+                    <p className="font-medium text-slate-200">{formatMoney(calc.availableCash)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-200">{tx.note}</p>
-                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider">
-                        {cat?.name || 'Manual Entry'} {tx.paymentMethod === 'card1' ? ' • UOB' : ''}
-                      </p>
-                      {tx.tags && tx.tags.map(tag => (
-                        <span key={tag} className="text-[8px] px-1.5 py-0.5 rounded-sm bg-slate-800 text-slate-400 font-bold tracking-widest uppercase">{tag}</span>
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] mb-1">Investments</p>
+                    <p className="font-medium text-slate-200">{formatMoney(calc.portfolioValue)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-[#12141a] p-4 rounded-2xl border border-white/5 relative overflow-hidden group">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={`p-1.5 rounded-lg ${vaultProgress >= 100 ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-400'}`}>
+                      <i className="ph-fill ph-lock-key text-[14px]"></i>
+                    </div>
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Reserve Vault</h3>
+                  </div>
+                  <p className={`text-lg font-semibold mb-2 ${vaultProgress >= 100 ? 'text-amber-100' : 'text-slate-300'}`}>
+                    {isDiscreet ? '•••' : (vaultProgress >= 100 ? 'Secured' : formatMoney(calc.vaultBalance).replace('.00', ''))}
+                  </p>
+                  <div className="w-full h-1 bg-black/50 rounded-full overflow-hidden">
+                    <div className={`h-full transition-all duration-1000 ${vaultProgress >= 100 ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'bg-slate-500'}`} style={{ width: `${vaultProgress}%` }}></div>
+                  </div>
+                </div>
+
+                <div className="bg-[#12141a] p-4 rounded-2xl border border-white/5">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">Centurion<br/>Milestone</h3>
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">{isDiscreet ? '••%' : `${goalProgress.toFixed(1)}%`}</span>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-300 mb-2">{isDiscreet ? '••••' : formatMoney(calc.netWorth).replace(CURRENCIES[baseCurrency].symbol, '')} <span className="text-[10px] text-slate-600">/ 100k</span></p>
+                  <div className="w-full h-1 bg-black/50 rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${goalProgress}%` }}></div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xs font-bold text-slate-300 uppercase tracking-widest">Ledger</h3>
+                  <button className="text-[10px] font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1 active:scale-95">View All <i className="ph-bold ph-caret-right text-[12px]"></i></button>
+                </div>
+                <div className="space-y-2">
+                  {recentTxs.length === 0 ? (
+                    <div className="p-6 bg-[#12141a]/60 rounded-2xl border border-white/5 text-center">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">No entries yet.</p>
+                      <p className="text-xs text-slate-600 mt-1">Awaiting your first Singapore payload.</p>
+                    </div>
+                  ) : recentTxs.map(tx => {
+                    const isInvestPnl = tx.type === 'pnl_profit' || tx.type === 'pnl_loss';
+                    const cat = isInvestPnl ? MOCK_PORTFOLIO.find(p => p.id === tx.categoryId) : INITIAL_CATEGORIES.find(c => c.id === tx.categoryId);
+                    const isPositive = tx.type === 'income' || tx.type === 'pnl_profit';
+
+                    return (
+                      <div key={tx.id} className="flex items-center justify-between p-4 bg-[#12141a]/60 rounded-2xl border border-white/5 hover:bg-[#12141a] transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${cat?.bg || 'bg-slate-800'}`}>
+                            {cat && <i className={`${cat.icon} text-[18px] ${cat.color}`}></i>}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-slate-200">{tx.note}</p>
+                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                              <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider">
+                                {cat?.name || 'Manual Entry'} {tx.paymentMethod === 'card1' ? ' • UOB' : ''}
+                              </p>
+                              {tx.tags && tx.tags.map(tag => (
+                                <span key={tag} className="text-[8px] px-1.5 py-0.5 rounded-sm bg-slate-800 text-slate-400 font-bold tracking-widest uppercase">{tag}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <p className={`font-semibold text-sm whitespace-nowrap ml-2 ${isPositive ? 'text-emerald-400' : 'text-slate-300'}`}>
+                          {isPositive ? '+' : '-'}{formatMoney(tx.amount).replace(CURRENCIES[baseCurrency].symbol, '')}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        function BudgetTab({ transactions, prefs }) {
+          const { formatMoney } = prefs;
+          const [filter, setFilter] = useState('all');
+
+          const getSpent = (catId) => {
+            return transactions.filter(t => t.categoryId === catId && t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+          };
+
+          const categories = INITIAL_CATEGORIES.filter(c => c.type !== 'income');
+          const filteredCats = filter === 'all' ? categories : categories.filter(c => c.type === filter);
+
+          return (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <h2 className="text-2xl font-semibold text-slate-100 tracking-tight">Allocation</h2>
+              
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                {['all', 'fixed', 'variable', 'investment'].map(f => (
+                  <button 
+                    key={f} onClick={() => setFilter(f)}
+                    className={`px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all ${filter === f ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-[#12141a] text-slate-500 border border-white/5 hover:text-slate-300'}`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-3">
+                {filteredCats.map(cat => {
+                  const limit = INITIAL_BUDGETS[cat.id] || 0;
+                  const spent = getSpent(cat.id);
+                  const percent = limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
+                  const isWarning = percent >= 85 && percent < 100;
+                  const isOver = percent >= 100;
+
+                  let barColor = 'bg-slate-300';
+                  if (isWarning) barColor = 'bg-amber-500';
+                  if (isOver) barColor = 'bg-rose-500';
+                  if (cat.type === 'investment') barColor = 'bg-emerald-400';
+
+                  return (
+                    <div key={cat.id} className="bg-[#12141a] p-5 rounded-[1.5rem] border border-white/5">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${cat.bg}`}>
+                            <i className={`${cat.icon} text-[18px] ${cat.color}`}></i>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-slate-200">{cat.name}</h4>
+                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.15em] mt-1">{cat.type}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-slate-100">{formatMoney(spent).replace(/[^\d.,]/g, '')}</p>
+                          <p className="text-[10px] text-slate-500 font-medium mt-0.5">Limit: {limit}</p>
+                        </div>
+                      </div>
+                      <div className="w-full h-1 bg-black/60 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full transition-all duration-1000 ${barColor}`} style={{ width: `${percent}%` }}></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        }
+
+        function InvestTab({ calc, prefs }) {
+          const { formatMoney, baseCurrency } = prefs;
+          const totalChange = calc.pnlAdjustments; 
+          const basePortfolioValue = calc.portfolioValue - totalChange;
+          const changePercent = basePortfolioValue > 0 ? (totalChange / basePortfolioValue) * 100 : 0;
+
+          return (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <h2 className="text-2xl font-semibold text-slate-100 tracking-tight">Markets</h2>
+
+              <div className="bg-gradient-to-br from-[#12141a] to-[#0a0b0e] rounded-[2rem] p-7 border border-white/5 relative overflow-hidden shadow-xl">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2">Total Holdings</p>
+                <h3 className="text-[2.5rem] leading-none font-semibold text-slate-100 tracking-tight">{formatMoney(calc.portfolioValue)}</h3>
+                
+                <div className="flex items-center gap-2 mt-4">
+                  <span className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded ${totalChange >= 0 ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'}`}>
+                    <i className={`ph-bold ph-arrow-up-right text-[12px] ${totalChange < 0 ? 'rotate-90' : ''}`}></i> 
+                    {formatMoney(Math.abs(totalChange)).replace(CURRENCIES[baseCurrency].symbol, '')} ({prefs.isDiscreet ? '••' : changePercent.toFixed(2)}%)
+                  </span>
+                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Aggregate PnL</span>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-4 pl-1">Current Assets</h4>
+                <div className="space-y-3">
+                  {MOCK_PORTFOLIO.map(asset => (
+                    <div key={asset.id} className="flex items-center justify-between p-4 bg-[#12141a] rounded-2xl border border-white/5">
+                       <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${asset.bg}`}>
+                            <i className={`${asset.icon} text-[18px] ${asset.color}`}></i>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-200">{asset.ticker}</p>
+                            <p className="text-[10px] font-medium text-slate-500 mt-0.5">{asset.name}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-slate-100">{formatMoney((asset.value + (calc.assetBalances[asset.id] || 0)))}</p>
+                          <p className={`text-[10px] font-bold mt-1 ${asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {asset.change >= 0 ? '+' : ''}{prefs.isDiscreet ? '•' : asset.change}%
+                          </p>
+                        </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        function InsightsTab({ calc, prefs }) {
+          const { formatMoney, isDiscreet } = prefs;
+
+          const annualizedIncome = (calc.totalIncome > 0 ? calc.totalIncome : 4000) * 12;
+          const monthlyBurn = calc.totalExpenses > 0 ? calc.totalExpenses : 3000;
+          const estAnnualTax = annualizedIncome > 40000 ? (annualizedIncome - 40000) * 0.07 + 900 : 0;
+          const fireNumber = monthlyBurn * 12 * 25; 
+          const fireProgress = Math.min(100, (calc.portfolioValue / fireNumber) * 100);
+
+          return (
+            <div className="space-y-6 animate-in fade-in duration-500 pb-8">
+              <h2 className="text-2xl font-semibold text-slate-100 tracking-tight">Intelligence</h2>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-[#12141a] rounded-3xl p-5 border border-white/5 relative overflow-hidden">
+                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] mb-1">Efficiency Ratio</p>
+                  <h3 className="text-3xl font-semibold tracking-tight text-amber-400">
+                    {isDiscreet ? '••' : (calc.totalIncome > 0 ? Math.round(((calc.totalIncome - calc.totalExpenses) / calc.totalIncome) * 100) : 0)}%
+                  </h3>
+                </div>
+                
+                <div className="bg-[#12141a] rounded-3xl p-5 border border-white/5 relative overflow-hidden">
+                  <i className="ph-fill ph-target text-[40px] absolute -right-2 -bottom-2 text-emerald-500/10 pointer-events-none"></i>
+                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] mb-1">F.I.R.E Progress</p>
+                  <h3 className="text-3xl font-semibold tracking-tight text-emerald-400">{isDiscreet ? '••' : fireProgress.toFixed(2)}%</h3>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-[#12141a] to-[#0a0b0e] p-6 rounded-[2rem] border border-white/5 relative">
+                <h3 className="text-sm font-semibold text-slate-200 mb-5 flex items-center gap-2"><i className="ph-fill ph-file-text text-[16px] text-indigo-400"></i> Singapore Compliance (Est.)</h3>
+                <div className="space-y-4">
+                  <div>
+                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">
+                       <span>Projected Annual Tax (IRAS)</span>
+                       <span className="text-rose-400">{formatMoney(estAnnualTax)}</span>
+                     </div>
+                     <div className="w-full h-1 bg-black/60 rounded-full overflow-hidden"><div className="h-full bg-rose-500 w-1/4"></div></div>
+                  </div>
+                </div>
+                <p className="text-[9px] text-slate-600 mt-4 leading-relaxed font-medium">*Projections based on annualized income run-rate. Actual figures depend on statutory caps and reliefs.</p>
+              </div>
+            </div>
+          );
+        }
+
+        function CardsTab({ calc, prefs }) {
+          const { formatMoney } = prefs;
+          return (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-semibold text-slate-100 tracking-tight">Credit Lines</h2>
+                <button className="text-amber-500 text-[10px] font-bold uppercase tracking-widest">Link Card</button>
+              </div>
+
+              <div className="space-y-5">
+                {INITIAL_CARDS.map((card) => {
+                  const currentBalance = calc.cardBalances[card.id] || 0;
+                  return (
+                    <div key={card.id} className={`bg-gradient-to-br ${card.color} rounded-[2rem] p-7 text-white border ${card.border} shadow-2xl relative overflow-hidden`}>
+                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/10 via-transparent to-black/40 pointer-events-none mix-blend-overlay"></div>
+                      <div className="w-10 h-8 bg-gradient-to-br from-amber-200 to-amber-500 rounded-md opacity-80 mb-6 relative z-10 flex items-center justify-center">
+                          <div className="w-full h-px bg-black/20 absolute"></div><div className="w-px h-full bg-black/20 absolute"></div>
+                      </div>
+                      <div className="flex justify-between items-start mb-6 relative z-10">
+                        <span className="text-sm font-bold bg-white/5 border border-white/10 px-3 py-1.5 rounded uppercase tracking-[0.15em]">{card.name}</span>
+                      </div>
+                      <div className="flex justify-between items-end relative z-10 mt-12">
+                        <div>
+                          <p className="text-[9px] uppercase tracking-[0.15em] text-slate-400 mb-1 font-bold">Outstanding</p>
+                          <p className="text-2xl font-semibold">{formatMoney(currentBalance, card.currency)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[9px] uppercase tracking-[0.15em] text-slate-400 mb-1 font-bold">Limit</p>
+                          <p className="text-sm font-medium">{formatMoney(card.limit, card.currency).replace('.00', '')}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        }
+
+        function NavItem({ icon, label, isActive, onClick }) {
+          return (
+            <button onClick={onClick} className="flex flex-col items-center gap-1.5 relative w-14 group">
+              <div className={`p-2 rounded-xl transition-all duration-300 ${isActive ? 'text-amber-400' : 'text-slate-600 group-hover:text-slate-400'}`}>
+                <i className={`${icon} text-[24px]`}></i>
+              </div>
+              <span className={`text-[8px] font-bold uppercase tracking-widest transition-all duration-300 ${isActive ? 'text-amber-400 opacity-100 scale-100' : 'opacity-0 translate-y-2 absolute bottom-[-10px] scale-90'}`}>
+                {label}
+              </span>
+            </button>
+          );
+        }
+
+        function TransactionModal({ onClose, onSave, prefs }) {
+          const { triggerHaptic } = prefs;
+          const [type, setType] = useState('expense');
+          const [amount, setAmount] = useState('');
+          const [note, setNote] = useState('');
+          const [categoryId, setCategoryId] = useState('');
+          const [paymentMethod, setPaymentMethod] = useState('cash');
+          const [tagsInput, setTagsInput] = useState('');
+
+          let availableCategories = type === 'income' || type === 'expense' 
+            ? INITIAL_CATEGORIES.filter(c => type === 'income' ? c.type === 'income' : c.type !== 'income')
+            : MOCK_PORTFOLIO;
+
+          const handleSubmit = (e) => {
+            e.preventDefault();
+            if (!amount || !categoryId) return;
+            triggerHaptic();
+            
+            let finalType = type;
+            if (type === 'profit') finalType = 'pnl_profit';
+            if (type === 'loss') finalType = 'pnl_loss';
+
+            const tagsArray = tagsInput.split(',').map(t => t.trim()).filter(t => t !== '');
+
+            onSave({
+              amount: parseFloat(amount),
+              categoryId,
+              type: finalType,
+              paymentMethod: type === 'expense' ? paymentMethod : 'cash',
+              note: note || (type === 'profit' || type === 'loss' ? 'Market Update' : 'Ledger Entry'),
+              tags: tagsArray.length > 0 ? tagsArray : null,
+              date: new Date().toISOString().split('T')[0]
+            });
+          };
+
+          return (
+            <div className="absolute inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+              <div className="w-full bg-[#0a0b0e] rounded-t-[2.5rem] p-6 pb-12 border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] animate-in slide-in-from-bottom-full duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
+                
+                <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6"></div>
+
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-semibold text-white tracking-tight">New Entry</h3>
+                  <button onClick={() => { triggerHaptic(); onClose(); }} className="p-2 bg-white/5 rounded-full text-slate-400 hover:bg-white/10 transition-colors">
+                    <i className="ph-bold ph-x text-[16px]"></i>
+                  </button>
+                </div>
+
+                <div className="flex bg-[#12141a] p-1.5 rounded-xl mb-6 border border-white/5 overflow-x-auto no-scrollbar gap-1">
+                  <button onClick={() => { triggerHaptic(); setType('expense'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'expense' ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500'}`}>Expense</button>
+                  <button onClick={() => { triggerHaptic(); setType('income'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'income' ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500'}`}>Income</button>
+                  <button onClick={() => { triggerHaptic(); setType('profit'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'profit' ? 'bg-emerald-500/20 text-emerald-400 shadow-sm' : 'text-slate-500'}`}>Profit</button>
+                  <button onClick={() => { triggerHaptic(); setType('loss'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'loss' ? 'bg-rose-500/20 text-rose-400 shadow-sm' : 'text-slate-500'}`}>Loss</button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 block">Amount (SGD)</label>
+                    <div className="relative">
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-600">$</span>
+                      <input 
+                        type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
+                        placeholder="0.00" autoFocus required
+                        className="w-full text-4xl font-semibold text-white bg-transparent border-b border-white/10 pl-7 pb-2 focus:outline-none focus:border-amber-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {type === 'expense' && (
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 block">Payment Source</label>
+                      <div className="flex bg-[#12141a] p-1.5 rounded-xl border border-white/5 gap-1">
+                        <button type="button" onClick={() => { triggerHaptic(); setPaymentMethod('cash'); }} className={`flex-1 py-2 text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all ${paymentMethod === 'cash' ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500'}`}>Cash / Bank</button>
+                        <button type="button" onClick={() => { triggerHaptic(); setPaymentMethod('card1'); }} className={`flex-1 py-2 text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all ${paymentMethod === 'card1' ? 'bg-amber-500/20 text-amber-400 shadow-sm' : 'text-slate-500'}`}>UOB World</button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-3 block">
+                      {type === 'profit' || type === 'loss' ? 'Select Asset' : 'Classification'}
+                    </label>
+                    <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto no-scrollbar pb-2">
+                      {availableCategories.map(cat => (
+                        <button
+                          key={cat.id} type="button" onClick={() => { triggerHaptic(); setCategoryId(cat.id); }}
+                          className={`flex flex-col items-center p-3 rounded-2xl border transition-all ${categoryId === cat.id ? 'border-amber-500 bg-amber-500/10' : 'border-white/5 bg-[#12141a] hover:bg-white/5'}`}
+                        >
+                          <i className={`${cat.icon} text-[18px] ${categoryId === cat.id ? 'text-amber-400' : 'text-slate-400'}`}></i>
+                          <span className={`text-[9px] font-bold mt-2 text-center leading-tight tracking-wide ${categoryId === cat.id ? 'text-amber-300' : 'text-slate-500'}`}>
+                            {type === 'profit' || type === 'loss' ? cat.ticker : cat.name}
+                          </span>
+                        </button>
                       ))}
                     </div>
                   </div>
-                </div>
-                <p className={`font-semibold text-sm whitespace-nowrap ml-2 ${isPositive ? 'text-emerald-400' : 'text-slate-300'}`}>
-                  {isPositive ? '+' : '-'}{formatMoney(tx.amount).replace(CURRENCIES[baseCurrency].symbol, '')}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function BudgetTab({ transactions, prefs }) {
-  const { formatMoney } = prefs;
-  const [filter, setFilter] = useState('all');
-
-  const getSpent = (catId) => {
-    return transactions.filter(t => t.categoryId === catId && t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-  };
-
-  const categories = INITIAL_CATEGORIES.filter(c => c.type !== 'income');
-  const filteredCats = filter === 'all' ? categories : categories.filter(c => c.type === filter);
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <h2 className="text-2xl font-semibold text-slate-100 tracking-tight">Allocation</h2>
-      
-      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-        {['all', 'fixed', 'variable', 'investment'].map(f => (
-          <button 
-            key={f} onClick={() => setFilter(f)}
-            className={`px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all ${filter === f ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-[#12141a] text-slate-500 border border-white/5 hover:text-slate-300'}`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
-      <div className="space-y-3">
-        {filteredCats.map(cat => {
-          const limit = INITIAL_BUDGETS[cat.id] || 0;
-          const spent = getSpent(cat.id);
-          const percent = limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
-          const isWarning = percent >= 85 && percent < 100;
-          const isOver = percent >= 100;
-
-          let barColor = 'bg-slate-300';
-          if (isWarning) barColor = 'bg-amber-500';
-          if (isOver) barColor = 'bg-rose-500';
-          if (cat.type === 'investment') barColor = 'bg-emerald-400';
-
-          return (
-            <div key={cat.id} className="bg-[#12141a] p-5 rounded-[1.5rem] border border-white/5">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${cat.bg}`}>
-                    <cat.icon size={18} className={cat.color} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 block">Reference Note</label>
+                      <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="E.g., Client Dinner" className="w-full bg-[#12141a] border border-white/5 rounded-xl px-4 py-3 text-xs font-medium text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all"/>
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 flex items-center gap-1"><i className="ph-bold ph-tag text-[10px]"></i> Tags</label>
+                      <input type="text" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="comma, separated" className="w-full bg-[#12141a] border border-white/5 rounded-xl px-4 py-3 text-xs font-medium text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all"/>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-slate-200">{cat.name}</h4>
-                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.15em] mt-1">{cat.type}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-slate-100">{formatMoney(spent).replace(/[^\d.,]/g, '')}</p>
-                  <p className="text-[10px] text-slate-500 font-medium mt-0.5">Limit: {limit}</p>
-                </div>
-              </div>
-              <div className="w-full h-1 bg-black/60 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all duration-1000 ${barColor}`} style={{ width: `${percent}%` }}></div>
+
+                  <button type="submit" className="w-full bg-gradient-to-r from-amber-300 to-amber-500 text-black text-[10px] font-bold uppercase tracking-[0.2em] py-4 rounded-2xl shadow-[0_0_15px_rgba(251,191,36,0.2)] active:scale-[0.98] transition-transform mt-4">
+                    Authorize Entry
+                  </button>
+                </form>
               </div>
             </div>
           );
-        })}
-      </div>
-    </div>
-  );
-}
+        }
 
-function InvestTab({ calc, prefs }) {
-  const { formatMoney, baseCurrency } = prefs;
-  const totalChange = calc.pnlAdjustments; 
-  const basePortfolioValue = calc.portfolioValue - totalChange;
-  const changePercent = basePortfolioValue > 0 ? (totalChange / basePortfolioValue) * 100 : 0;
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <h2 className="text-2xl font-semibold text-slate-100 tracking-tight">Markets</h2>
-
-      <div className="bg-gradient-to-br from-[#12141a] to-[#0a0b0e] rounded-[2rem] p-7 border border-white/5 relative overflow-hidden shadow-xl">
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2">Total Holdings</p>
-        <h3 className="text-[2.5rem] leading-none font-semibold text-slate-100 tracking-tight">{formatMoney(calc.portfolioValue)}</h3>
-        
-        <div className="flex items-center gap-2 mt-4">
-          <span className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded ${totalChange >= 0 ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'}`}>
-            <ArrowUpRight size={12} className={totalChange < 0 ? 'rotate-90' : ''} /> 
-            {formatMoney(Math.abs(totalChange)).replace(CURRENCIES[baseCurrency].symbol, '')} ({prefs.isDiscreet ? '••' : changePercent.toFixed(2)}%)
-          </span>
-          <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Aggregate PnL</span>
-        </div>
-      </div>
-
-      <div>
-        <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-4 pl-1">Current Assets</h4>
-        <div className="space-y-3">
-          {MOCK_PORTFOLIO.map(asset => (
-            <div key={asset.id} className="flex items-center justify-between p-4 bg-[#12141a] rounded-2xl border border-white/5">
-               <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${asset.bg}`}>
-                    <asset.icon size={18} className={asset.color} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-200">{asset.ticker}</p>
-                    <p className="text-[10px] font-medium text-slate-500 mt-0.5">{asset.name}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-slate-100">{formatMoney((asset.value + (calc.assetBalances[asset.id] || 0)))}</p>
-                  <p className={`text-[10px] font-bold mt-1 ${asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {asset.change >= 0 ? '+' : ''}{prefs.isDiscreet ? '•' : asset.change}%
-                  </p>
-                </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function InsightsTab({ calc, prefs }) {
-  const { formatMoney, isDiscreet } = prefs;
-
-  // Family Office Intelligence Engines
-  const annualizedIncome = (calc.totalIncome > 0 ? calc.totalIncome : 4000) * 12;
-  const monthlyBurn = calc.totalExpenses > 0 ? calc.totalExpenses : 3000;
-  
-  // Tax Projection (Simplified Mock for SGD)
-  const estAnnualTax = annualizedIncome > 40000 ? (annualizedIncome - 40000) * 0.07 + 900 : 0;
-
-  // FIRE Engine (Financial Independence Retire Early)
-  const fireNumber = monthlyBurn * 12 * 25; // 4% Rule
-  const fireProgress = Math.min(100, (calc.portfolioValue / fireNumber) * 100);
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-8">
-      <h2 className="text-2xl font-semibold text-slate-100 tracking-tight">Intelligence</h2>
-
-      <div className="grid grid-cols-2 gap-3">
-        {/* Efficiency Ratio */}
-        <div className="bg-[#12141a] rounded-3xl p-5 border border-white/5 relative overflow-hidden">
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] mb-1">Efficiency Ratio</p>
-          <h3 className="text-3xl font-semibold tracking-tight text-amber-400">
-            {isDiscreet ? '••' : (calc.totalIncome > 0 ? Math.round(((calc.totalIncome - calc.totalExpenses) / calc.totalIncome) * 100) : 0)}%
-          </h3>
-        </div>
-        
-        {/* FIRE Runway Tracker */}
-        <div className="bg-[#12141a] rounded-3xl p-5 border border-white/5 relative overflow-hidden">
-          <Target size={40} className="absolute -right-2 -bottom-2 text-emerald-500/10 pointer-events-none" />
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] mb-1">F.I.R.E Progress</p>
-          <h3 className="text-3xl font-semibold tracking-tight text-emerald-400">{isDiscreet ? '••' : fireProgress.toFixed(2)}%</h3>
-        </div>
-      </div>
-
-      {/* Tax & Compliance Automator */}
-      <div className="bg-gradient-to-br from-[#12141a] to-[#0a0b0e] p-6 rounded-[2rem] border border-white/5 relative">
-        <h3 className="text-sm font-semibold text-slate-200 mb-5 flex items-center gap-2"><FileText size={16} className="text-indigo-400"/> Singapore Compliance (Est.)</h3>
-        <div className="space-y-4">
-          <div>
-             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">
-               <span>Projected Annual Tax (IRAS)</span>
-               <span className="text-rose-400">{formatMoney(estAnnualTax)}</span>
-             </div>
-             <div className="w-full h-1 bg-black/60 rounded-full overflow-hidden"><div className="h-full bg-rose-500 w-1/4"></div></div>
-          </div>
-        </div>
-        <p className="text-[9px] text-slate-600 mt-4 leading-relaxed font-medium">*Projections based on annualized income run-rate. Actual figures depend on statutory caps and reliefs.</p>
-      </div>
-
-    </div>
-  );
-}
-
-function CardsTab({ calc, prefs }) {
-  const { formatMoney } = prefs;
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-slate-100 tracking-tight">Credit Lines</h2>
-        <button className="text-amber-500 text-[10px] font-bold uppercase tracking-widest">Link Card</button>
-      </div>
-
-      <div className="space-y-5">
-        {INITIAL_CARDS.map((card) => {
-          const currentBalance = calc.cardBalances[card.id] || 0;
-          return (
-            <div key={card.id} className={`bg-gradient-to-br ${card.color} rounded-[2rem] p-7 text-white border ${card.border} shadow-2xl relative overflow-hidden`}>
-              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/10 via-transparent to-black/40 pointer-events-none mix-blend-overlay"></div>
-              <div className="w-10 h-8 bg-gradient-to-br from-amber-200 to-amber-500 rounded-md opacity-80 mb-6 relative z-10 flex items-center justify-center">
-                  <div className="w-full h-px bg-black/20 absolute"></div><div className="w-px h-full bg-black/20 absolute"></div>
-              </div>
-              <div className="flex justify-between items-start mb-6 relative z-10">
-                <span className="text-sm font-bold bg-white/5 border border-white/10 px-3 py-1.5 rounded uppercase tracking-[0.15em]">{card.name}</span>
-              </div>
-              <div className="flex justify-between items-end relative z-10 mt-12">
-                <div>
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-slate-400 mb-1 font-bold">Outstanding</p>
-                  <p className="text-2xl font-semibold">{formatMoney(currentBalance, card.currency)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-slate-400 mb-1 font-bold">Limit</p>
-                  <p className="text-sm font-medium">{formatMoney(card.limit, card.currency).replace('.00', '')}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// --- HELPER COMPONENTS ---
-
-function NavItem({ icon: Icon, label, isActive, onClick }) {
-  return (
-    <button onClick={onClick} className="flex flex-col items-center gap-1.5 relative w-14 group">
-      <div className={`p-2 rounded-xl transition-all duration-300 ${isActive ? 'text-amber-400' : 'text-slate-600 group-hover:text-slate-400'}`}>
-        <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-      </div>
-      <span className={`text-[8px] font-bold uppercase tracking-widest transition-all duration-300 ${isActive ? 'text-amber-400 opacity-100 scale-100' : 'opacity-0 translate-y-2 absolute bottom-[-10px] scale-90'}`}>
-        {label}
-      </span>
-    </button>
-  );
-}
-
-function TransactionModal({ onClose, onSave, prefs }) {
-  const { triggerHaptic } = prefs;
-  const [type, setType] = useState('expense');
-  const [amount, setAmount] = useState('');
-  const [note, setNote] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [tagsInput, setTagsInput] = useState('');
-
-  let availableCategories = type === 'income' || type === 'expense' 
-    ? INITIAL_CATEGORIES.filter(c => type === 'income' ? c.type === 'income' : c.type !== 'income')
-    : MOCK_PORTFOLIO;
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!amount || !categoryId) return;
-    triggerHaptic();
-    
-    let finalType = type;
-    if (type === 'profit') finalType = 'pnl_profit';
-    if (type === 'loss') finalType = 'pnl_loss';
-
-    const tagsArray = tagsInput.split(',').map(t => t.trim()).filter(t => t !== '');
-
-    onSave({
-      amount: parseFloat(amount),
-      categoryId,
-      type: finalType,
-      paymentMethod: type === 'expense' ? paymentMethod : 'cash',
-      note: note || (type === 'profit' || type === 'loss' ? 'Market Update' : 'Ledger Entry'),
-      tags: tagsArray.length > 0 ? tagsArray : null,
-      date: new Date().toISOString().split('T')[0]
-    });
-  };
-
-  return (
-    <div className="absolute inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="w-full bg-[#0a0b0e] rounded-t-[2.5rem] p-6 pb-12 border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] animate-in slide-in-from-bottom-full duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
-        
-        <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6"></div>
-
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-white tracking-tight">New Entry</h3>
-          <button onClick={() => { triggerHaptic(); onClose(); }} className="p-2 bg-white/5 rounded-full text-slate-400 hover:bg-white/10 transition-colors">
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="flex bg-[#12141a] p-1.5 rounded-xl mb-6 border border-white/5 overflow-x-auto no-scrollbar gap-1">
-          <button onClick={() => { triggerHaptic(); setType('expense'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'expense' ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500'}`}>Expense</button>
-          <button onClick={() => { triggerHaptic(); setType('income'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'income' ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500'}`}>Income</button>
-          <button onClick={() => { triggerHaptic(); setType('profit'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'profit' ? 'bg-emerald-500/20 text-emerald-400 shadow-sm' : 'text-slate-500'}`}>Profit</button>
-          <button onClick={() => { triggerHaptic(); setType('loss'); setCategoryId('');}} className={`flex-1 min-w-[65px] py-2.5 text-[9px] font-bold rounded-lg uppercase tracking-[0.1em] transition-all ${type === 'loss' ? 'bg-rose-500/20 text-rose-400 shadow-sm' : 'text-slate-500'}`}>Loss</button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 block">Amount (SGD)</label>
-            <div className="relative">
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-600">$</span>
-              <input 
-                type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00" autoFocus required
-                className="w-full text-4xl font-semibold text-white bg-transparent border-b border-white/10 pl-7 pb-2 focus:outline-none focus:border-amber-500 transition-colors"
-              />
-            </div>
-          </div>
-
-          {type === 'expense' && (
-            <div>
-              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 block">Payment Source</label>
-              <div className="flex bg-[#12141a] p-1.5 rounded-xl border border-white/5 gap-1">
-                <button type="button" onClick={() => { triggerHaptic(); setPaymentMethod('cash'); }} className={`flex-1 py-2 text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all ${paymentMethod === 'cash' ? 'bg-white/10 text-white shadow-sm' : 'text-slate-500'}`}>Cash / Bank</button>
-                <button type="button" onClick={() => { triggerHaptic(); setPaymentMethod('card1'); }} className={`flex-1 py-2 text-[10px] font-bold rounded-lg uppercase tracking-wider transition-all ${paymentMethod === 'card1' ? 'bg-amber-500/20 text-amber-400 shadow-sm' : 'text-slate-500'}`}>UOB World</button>
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-3 block">
-              {type === 'profit' || type === 'loss' ? 'Select Asset' : 'Classification'}
-            </label>
-            <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto no-scrollbar pb-2">
-              {availableCategories.map(cat => (
-                <button
-                  key={cat.id} type="button" onClick={() => { triggerHaptic(); setCategoryId(cat.id); }}
-                  className={`flex flex-col items-center p-3 rounded-2xl border transition-all ${categoryId === cat.id ? 'border-amber-500 bg-amber-500/10' : 'border-white/5 bg-[#12141a] hover:bg-white/5'}`}
-                >
-                  <cat.icon size={18} className={categoryId === cat.id ? 'text-amber-400' : 'text-slate-400'} />
-                  <span className={`text-[9px] font-bold mt-2 text-center leading-tight tracking-wide ${categoryId === cat.id ? 'text-amber-300' : 'text-slate-500'}`}>
-                    {type === 'profit' || type === 'loss' ? cat.ticker : cat.name}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 block">Reference Note</label>
-              <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="E.g., Client Dinner" className="w-full bg-[#12141a] border border-white/5 rounded-xl px-4 py-3 text-xs font-medium text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all"/>
-            </div>
-            <div>
-              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-2 flex items-center gap-1"><Tag size={10}/> Tags</label>
-              <input type="text" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="comma, separated" className="w-full bg-[#12141a] border border-white/5 rounded-xl px-4 py-3 text-xs font-medium text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all"/>
-            </div>
-          </div>
-
-          <button type="submit" className="w-full bg-gradient-to-r from-amber-300 to-amber-500 text-black text-[10px] font-bold uppercase tracking-[0.2em] py-4 rounded-2xl shadow-[0_0_15px_rgba(251,191,36,0.2)] active:scale-[0.98] transition-transform mt-4">
-            Authorize Entry
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
