@@ -28,10 +28,22 @@
         *::-webkit-scrollbar { display: none !important; }
         * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
         
-        body {
+        /* App Shell Lock: Prevents the entire page from bouncing/scrolling */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; 
+            overscroll-behavior: none; 
             background-color: #000;
-            -webkit-tap-highlight-color: transparent; /* Removes touch flash on iOS */
-            touch-action: pan-x pan-y; /* Optimize touch actions */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #root {
+            width: 100%;
+            height: 100%;
+            position: relative;
         }
     </style>
 </head>
@@ -184,7 +196,7 @@
 
           if (!isUnlocked) {
             return (
-              <div className="h-[100dvh] w-full bg-[#040506] flex flex-col items-center justify-center text-slate-200 selection:bg-amber-500/30">
+              <div className="absolute inset-0 w-full bg-[#040506] flex flex-col items-center justify-center text-slate-200 selection:bg-amber-500/30">
                 <div onClick={() => { triggerHaptic(); setIsUnlocked(true); }} className="flex flex-col items-center cursor-pointer group active:scale-95 transition-transform">
                   <div className="w-24 h-24 rounded-full border border-amber-500/20 bg-amber-500/5 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(251,191,36,0.1)] group-hover:shadow-[0_0_40px_rgba(251,191,36,0.2)] transition-shadow">
                     <i className="ph-bold ph-fingerprint text-[48px] text-amber-500 animate-pulse font-light"></i>
@@ -197,7 +209,7 @@
           }
 
           return (
-            <div className="h-[100dvh] w-full bg-black text-slate-200 flex justify-center overflow-hidden font-sans selection:bg-amber-500/30">
+            <div className="absolute inset-0 w-full bg-black text-slate-200 flex justify-center overflow-hidden font-sans selection:bg-amber-500/30">
               <div className="w-full max-w-md bg-[#08090a] relative flex flex-col h-full shadow-2xl shadow-amber-900/5">
                 
                 <header className="flex-shrink-0 px-5 pt-12 pb-3 bg-[#08090a]/90 backdrop-blur-xl z-20 flex justify-between items-center border-b border-white/5">
@@ -215,7 +227,8 @@
                   </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto no-scrollbar px-5 pt-5 pb-20 relative">
+                {/* Added overscroll-contain to stop scroll leaking to the body */}
+                <main className="flex-1 overflow-y-auto overscroll-contain no-scrollbar px-5 pt-5 pb-20 relative">
                   {activeTab === 'home' && <HomeTab calc={calculations} transactions={transactions} prefs={prefs} />}
                   {activeTab === 'budget' && <BudgetTab transactions={transactions} prefs={prefs} />}
                   {activeTab === 'invest' && <InvestTab calc={calculations} prefs={prefs} />}
@@ -607,7 +620,8 @@
 
           return (
             <div className="absolute inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-              <div className="w-full bg-[#0a0b0e] rounded-t-[2.5rem] p-6 pb-12 border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] animate-in slide-in-from-bottom-full duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
+              {/* Added overscroll-contain to modal content */}
+              <div className="w-full bg-[#0a0b0e] rounded-t-[2.5rem] p-6 pb-12 border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] animate-in slide-in-from-bottom-full duration-300 max-h-[90vh] overflow-y-auto overscroll-contain no-scrollbar">
                 
                 <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6"></div>
 
