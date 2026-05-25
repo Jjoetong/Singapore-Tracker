@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wealth">
+<meta name="theme-color" content="#08090a">
+<title>Private Wealth</title>
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+::-webkit-scrollbar{display:none}
+
+html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;background:#000;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif}
+
+#app{width:100%;height:100%;display:flex;flex-direction:column;max-width:430px;margin:0 auto;background:#08090a;position:relative}
+
+.label{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#64748b}
+
+.title{font-size:24px;font-weight:600;color:#f1f5f9;letter-spacing:-.02em}
+
+.scroll{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+
+#header{flex-shrink:0;padding:48px 20px 12px;background:rgba(8,9,10,.9);border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;z-index:20}
+
+.header-sub{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(251,191,36,.8)}
+
+.header-name{font-size:20px;font-weight:600;color:#f1f5f9;margin-top:2px}
+
+.avatar{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(251,191,36,.2),rgba(251,191,36,.02));border:1px solid rgba(251,191,36,.2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fde68a}
+
+.eye-btn{background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer;line-height:1;padding:4px}
+
+#main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:20px;padding-bottom:90px}
+
+#nav{flex-shrink:0;height:80px;background:rgba(8,9,10,.95);border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-around;align-items:center;padding:0 8px;z-index:20}
+
+.nav-btn{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;cursor:pointer;width:60px}
+
+.nav-icon{font-size:22px;color:#475569;transition:color .2s}
+
+.nav-label{font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#475569;transition:color .2s;opacity:0}
+
+.nav-btn.active .nav-icon,.nav-btn.active .nav-label{color:#fbbf24}
+
+.nav-btn.active .nav-label{opacity:1}
+
+#fab{position:absolute;bottom:88px;right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#fde68a,#f59e0b);border:none;font-size:28px;color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(251,191,36,.3);z-index:30;line-height:1}
+
+.card{background:linear-gradient(135deg,#12141a,#0a0b0e);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:28px}
+
+.card-sm{background:#12141a;border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:16px}
+
+.card-row{background:rgba(18,20,26,.6);border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+
+.nw-amount{font-size:40px;font-weight:600;color:#f1f5f9;letter-spacing:-.02em;cursor:pointer;line-height:1.1}
+
+.nw-sub{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(251,191,36,.7);margin-top:8px;display:flex;align-items:center;gap:4px}
+
+.nw-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;border-top:1px solid rgba(255,255,255,.06);margin-top:24px;padding-top:20px}
+
+.nw-cell-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#475569;margin-bottom:4px}
+
+.nw-cell-val{font-size:14px;font-weight:500;color:#e2e8f0}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.pbar-wrap{width:100%;height:4px;background:rgba(0,0,0,.5);border-radius:99px;overflow:hidden;margin-top:8px}
+
+.pbar{height:100%;border-radius:99px;transition:width .8s}
+
+.badge{font-size:8px;padding:2px 6px;border-radius:3px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(99,102,241,.1);color:#a5b4fc}
+
+.icon-wrap{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+
+.tx-note{font-size:14px;font-weight:500;color:#e2e8f0}
+
+.tx-meta{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#475569;margin-top:4px}
+
+.tx-amt{font-size:14px;font-weight:600;white-space:nowrap}
+
+.tx-amt.pos{color:#34d399}
+
+.tx-amt.neg{color:#e2e8f0}
+
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+
+.sec-title{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#cbd5e1}
+
+.sec-link{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+
+.chip{padding:8px 16px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;border:1px solid rgba(255,255,255,.06);background:#12141a;color:#475569;cursor:pointer}
+
+.chip.on{background:rgba(251,191,36,.1);color:#fbbf24;border-color:rgba(251,191,36,.2)}
+
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);z-index:40;display:flex;align-items:flex-end}
+
+.modal-sheet{width:100%;background:#0a0b0e;border-radius:32px 32px 0 0;border-top:1px solid rgba(255,255,255,.1);padding:24px 24px 48px;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+.modal-handle{width:48px;height:4px;background:rgba(255,255,255,.1);border-radius:99px;margin:0 auto 24px}
+
+.modal-title{font-size:18px;font-weight:600;color:#fff;margin-bottom:24px}
+
+.modal-close{background:rgba(255,255,255,.06);border:none;width:36px;height:36px;border-radius:50%;color:#94a3b8;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;float:right;margin-top:-4px}
+
+.fullscreen{position:absolute;inset:0;z-index:40;background:#08090a;display:flex;flex-direction:column}
+
+.fs-header{flex-shrink:0;padding:48px 20px 16px;background:#0a0b0e;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center}
+
+.fs-title{font-size:20px;font-weight:600;color:#fff}
+
+.fs-close{background:rgba(255,255,255,.06);border:none;width:36px;height:36px;border-radius:50%;color:#94a3b8;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+.fs-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px;display:flex;flex-direction:column;gap:8px;padding-bottom:40px}
+
+.type-tabs{display:flex;background:#12141a;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:6px;gap:4px;margin-bottom:24px;overflow-x:auto}
+
+.type-tab{flex:1;min-width:60px;padding:10px 4px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:none;border-radius:10px;background:none;color:#475569;cursor:pointer;transition:all .2s}
+
+.type-tab.on-expense{background:rgba(255,255,255,.1);color:#fff}
+
+.type-tab.on-income{background:rgba(255,255,255,.1);color:#fff}
+
+.type-tab.on-profit{background:rgba(52,211,153,.15);color:#34d399}
+
+.type-tab.on-loss{background:rgba(239,68,68,.15);color:#f87171}
+
+.amount-wrap{display:flex;align-items:baseline;gap:8px;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px;margin-bottom:4px}
+
+.currency-sym{font-size:24px;font-weight:700;color:#475569}
+
+.amount-input{background:none;border:none;font-size:40px;font-weight:600;color:#fff;flex:1;min-width:0;outline:none}
+
+.cur-toggle{display:flex;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:2px;gap:2px}
+
+.cur-btn{padding:4px 8px;font-size:9px;font-weight:700;border:none;border-radius:6px;background:none;color:#475569;cursor:pointer}
+
+.cur-btn.on{background:#334155;color:#fff}
+
+.pay-tabs{display:flex;background:#12141a;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:4px;gap:3px;overflow-x:auto}
+
+.pay-tab{flex:1;min-width:72px;padding:8px 4px;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:none;border-radius:8px;background:none;color:#475569;cursor:pointer;white-space:nowrap}
+
+.pay-tab.on-cash{background:rgba(255,255,255,.1);color:#fff}
+
+.pay-tab.on-wallet{background:rgba(52,211,153,.15);color:#34d399}
+
+.pay-tab.on-card{background:rgba(251,191,36,.15);color:#fbbf24}
+
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:160px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+
+.cat-btn{display:flex;flex-direction:column;align-items:center;padding:12px 4px;border-radius:16px;border:1px solid rgba(255,255,255,.06);background:#12141a;cursor:pointer;gap:6px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#475569;text-align:center;line-height:1.2}
+
+.cat-btn.sel{border-color:#f59e0b;background:rgba(251,191,36,.1);color:#fde68a}
+
+.cat-btn .ci{font-size:18px}
+
+.sub-tabs{display:flex;background:#12141a;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:4px;gap:3px}
+
+.sub-tab{flex:1;padding:8px 4px;font-size:10px;font-weight:700;border:none;border-radius:8px;background:none;color:#475569;cursor:pointer;text-transform:uppercase;letter-spacing:.08em}
+
+.sub-tab.on{background:rgba(251,191,36,.2);color:#fbbf24}
+
+.sub-tab.on-sky{background:rgba(56,189,248,.2);color:#38bdf8}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+
+.form-label{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#475569;display:block;margin-bottom:8px}
+
+.form-input{width:100%;background:#12141a;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 16px;font-size:12px;font-weight:500;color:#e2e8f0;outline:none}
+
+.submit-btn{width:100%;background:linear-gradient(90deg,#fde68a,#f59e0b);color:#000;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:16px;border-radius:16px;border:none;cursor:pointer;margin-top:16px}
+
+.gap{margin-top:24px}
+
+.gap-sm{margin-top:12px}
+
+.hidden{display:none!important}
+
+.amberglow{box-shadow:0 0 15px rgba(251,191,36,.1)}
+
+/* reconciliation banner */
+.recon-banner{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.15);border-radius:14px;padding:12px 16px;margin-bottom:16px;font-size:10px;color:#fde68a;font-weight:600;line-height:1.6}
+</style>
+</head>
+<body>
+<div id="app">
+<header id="header">
+<div>
+<div class="header-sub">Private Wealth</div>
+<div class="header-name">Welcome, Commander</div>
+</div>
+<div style="display:flex;align-items:center;gap:16px">
+<button class="eye-btn" id="eye-btn">👁</button>
+<div class="avatar" id="avatar-btn" style="cursor:pointer" onclick="openBackup()">JO</div>
+</div>
+</header>
+<div id="main"></div>
+<button id="fab">+</button>
+<nav id="nav">
+<button class="nav-btn active" data-tab="home"><span class="nav-icon">🏠</span><span class="nav-label">Portfolio</span></button>
+<button class="nav-btn" data-tab="budget"><span class="nav-icon">📊</span><span class="nav-label">Budget</span></button>
+<button class="nav-btn" data-tab="ledger"><span class="nav-icon">📒</span><span class="nav-label">Ledger</span></button>
+<button class="nav-btn" data-tab="insights"><span class="nav-icon">⚡</span><span class="nav-label">Insights</span></button>
+<button class="nav-btn" data-tab="gamble"><span class="nav-icon">🎲</span><span class="nav-label">G&I</span></button>
+</nav>
+</div>
+<script>
+
+var R = 3.48; // historical rate used for MYR entries stored in code
+var liveRate = R;
+var isDiscreet = false;
+var baseCur = 'SGD';
+var activeTab = 'home';
+var budgetFilter = 'all';
+var selectedMonth = '';   // 'YYYY-MM' or '' = all time
+var selectedCatId = '';
+var txType = 'expense';
+var payMethod = 'cash';
+var inputCur = 'SGD';
+var mealType = '';
+var laundryType = '';
+
+var CATS = [
+  {id:'c1',  name:'Salary',          type:'income',     icon:'💼', bg:'rgba(251,191,36,.1)',  col:'#fde68a'},
+  {id:'c2',  name:'Dividends',       type:'income',     icon:'📈', bg:'rgba(251,191,36,.1)',  col:'#fde68a'},
+  {id:'c17', name:'Interest',        type:'income',     icon:'💹', bg:'rgba(34,211,238,.1)',  col:'#67e8f9'},
+  {id:'c12', name:'Debit (Dad)',      type:'income',     icon:'🤲', bg:'rgba(99,102,241,.1)', col:'#a5b4fc'},
+  {id:'c16', name:'Internal Tfr',    type:'mixed',      icon:'↔️', bg:'rgba(99,102,241,.1)', col:'#a5b4fc'},
+  {id:'c3',  name:'Rent',            type:'fixed',      icon:'🏢', bg:'rgba(100,116,139,.1)',col:'#cbd5e1'},
+  {id:'c4',  name:'SP Services',     type:'fixed',      icon:'🛡', bg:'rgba(100,116,139,.1)',col:'#cbd5e1'},
+  {id:'c5',  name:'Hawker & Dining', type:'variable',   icon:'🍴', bg:'rgba(100,116,139,.1)',col:'#cbd5e1'},
+  {id:'c6',  name:'MRT & Transport', type:'variable',   icon:'🚌', bg:'rgba(100,116,139,.1)',col:'#cbd5e1'},
+  {id:'c7',  name:'Shopping',        type:'variable',   icon:'🛍', bg:'rgba(100,116,139,.1)',col:'#cbd5e1'},
+  {id:'c8',  name:'Telco & Subs',    type:'fixed',      icon:'📱', bg:'rgba(100,116,139,.1)',col:'#cbd5e1'},
+  {id:'c9',  name:'Investments',     type:'investment', icon:'🏦', bg:'rgba(52,211,153,.1)', col:'#34d399'},
+  {id:'c10', name:'Card Payment',    type:'expense',    icon:'💳', bg:'rgba(239,68,68,.1)',  col:'#f87171'},
+  {id:'c11', name:'Income Tax',      type:'fixed',      icon:'📄', bg:'rgba(100,116,139,.1)',col:'#cbd5e1'},
+  {id:'c13', name:'Gambling',        type:'mixed',      icon:'🎲', bg:'rgba(168,85,247,.1)', col:'#c084fc'},
+  {id:'c14', name:'Sonia',           type:'variable',   icon:'❤️', bg:'rgba(236,72,153,.1)', col:'#f472b6'},
+  {id:'c15', name:'ATM Withdrawal',  type:'variable',   icon:'💵', bg:'rgba(52,211,153,.1)', col:'#34d399'},
+  {id:'c18', name:'Laundry',         type:'variable',   icon:'🌀', bg:'rgba(56,189,248,.1)', col:'#38bdf8'},
+  {id:'c19', name:'Snacks & Drinks', type:'variable',   icon:'☕', bg:'rgba(251,146,60,.1)', col:'#fb923c'},
+  {id:'c20', name:'Accommodation',   type:'fixed',      icon:'🏨', bg:'rgba(100,116,139,.1)',col:'#cbd5e1'},
+];
+
+var BUDGETS = {c3:1200,c4:100,c5:600,c6:150,c7:200,c8:50,c9:300,c11:150,c13:500,c14:200,c18:50,c20:800};
+
+// ── INIT TRANSACTIONS ──────────────────────────────────────────────────
+// Rate R=3.48 used for all MYR entries (historical rate at time of entry)
+// pay:'cash' = Bank/PayNow (MYR bank account)
+// pay:'wallet' = Cash Wallet (SGD physical cash)
+// pay:'card' = UOB World Card
+
+var INIT_TXS = [
+  // ── 17 MAY 2026 ──
+  {id:1,   date:'2026-05-17', amount:121.22/R, orig:121.22, cur:'MYR', catId:'c16', type:'income',  pay:'cash',   note:'Internal Transfer',                   acct:'bank'},
+  {id:2,   date:'2026-05-17', amount:18.00/R,  orig:18.00,  cur:'MYR', catId:'c16', type:'expense', pay:'cash',   note:'Internal Transfer',                   acct:'bank'},
+  {id:3,   date:'2026-05-17', amount:2000.00/R,orig:2000.00,cur:'MYR', catId:'c12', type:'income',  pay:'cash',   note:'Transfer from Dad',                   acct:'bank'},
+  {id:300, date:'2026-05-17', amount:1.00/R,   orig:1.00,   cur:'MYR', catId:'c16', type:'income',  pay:'cash',   note:'Internal Transfer',                   acct:'bank'},
+  {id:4,   date:'2026-05-17', amount:200.00/R, orig:200.00, cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:5,   date:'2026-05-17', amount:30.00/R,  orig:30.00,  cur:'MYR', catId:'c14', type:'expense', pay:'cash',   note:'Transfer to Sonia',                   acct:'bank'},
+  {id:6,   date:'2026-05-17', amount:200.00/R, orig:200.00, cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:7,   date:'2026-05-17', amount:5.00/R,   orig:5.00,   cur:'MYR', catId:'c5',  type:'expense', pay:'cash',   note:'Roadside Nasi Lemak',                 acct:'bank', meal:'Dinner'},
+  {id:8,   date:'2026-05-17', amount:200.00/R, orig:200.00, cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:9,   date:'2026-05-17', amount:9.50/R,   orig:9.50,   cur:'MYR', catId:'c19', type:'expense', pay:'cash',   note:'Snacks',                              acct:'bank'},
+  {id:10,  date:'2026-05-17', amount:478.10/R, orig:478.10, cur:'MYR', catId:'c15', type:'expense', pay:'cash',   note:'ATM Withdrawal UOB (SGD 150 received)',acct:'bank', atmSGD:150.00},
+  {id:11,  date:'2026-05-17', amount:50.00,    orig:50.00,  cur:'SGD', catId:'c20', type:'expense', pay:'wallet', note:'Deposit Bugis Social (Refundable)',     acct:'cash'},
+
+  // ── 18 MAY 2026 ──
+  {id:12,  date:'2026-05-18', amount:200.00/R, orig:200.00, cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:400, date:'2026-05-18', amount:0.12/R,   orig:0.12,   cur:'MYR', catId:'c17', type:'income',  pay:'cash',   note:'RYT Bank Interest',                   acct:'bank'},
+  {id:13,  date:'2026-05-18', amount:200.00/R, orig:200.00, cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:14,  date:'2026-05-18', amount:200.00/R, orig:200.00, cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:15,  date:'2026-05-18', amount:6.90,     orig:6.90,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Thai Style Chicken Chop @ Work',       acct:'cash', meal:'Lunch'},
+  {id:16,  date:'2026-05-18', amount:8.90,     orig:8.90,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Chicken Cutlet @ Malaysia Boleh',      acct:'cash', meal:'Dinner'},
+  {id:804, date:'2026-05-18', amount:15.00,    orig:15.00,  cur:'SGD', catId:'c8',  type:'expense', pay:'wallet', note:'Singtel',                              acct:'cash'},
+
+  // ── 19 MAY 2026 ──
+  {id:401, date:'2026-05-19', amount:0.03/R,   orig:0.03,   cur:'MYR', catId:'c17', type:'income',  pay:'cash',   note:'RYT Bank Interest',                   acct:'bank'},
+  {id:17,  date:'2026-05-19', amount:1000.00/R,orig:1000.00,cur:'MYR', catId:'c12', type:'income',  pay:'cash',   note:'Transfer from Dad',                   acct:'bank'},
+  {id:18,  date:'2026-05-19', amount:200.00/R, orig:200.00, cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:19,  date:'2026-05-19', amount:200.00/R, orig:200.00, cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:20,  date:'2026-05-19', amount:200.00/R, orig:200.00, cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:22,  date:'2026-05-19', amount:1.20,     orig:1.20,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Bread',                               acct:'cash', meal:'Breakfast'},
+  {id:23,  date:'2026-05-19', amount:6.90,     orig:6.90,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Chicken Chop Rice @ Work',             acct:'cash', meal:'Lunch'},
+  {id:24,  date:'2026-05-19', amount:6.00,     orig:6.00,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Claypot Lao Shu Fen @ MalaysiaBoleh',  acct:'cash', meal:'Dinner'},
+
+  // ── 20 MAY 2026 ──
+  {id:402, date:'2026-05-20', amount:0.06/R,   orig:0.06,   cur:'MYR', catId:'c17', type:'income',  pay:'cash',   note:'RYT Bank Interest',                   acct:'bank'},
+  {id:26,  date:'2026-05-20', amount:7.50,     orig:7.50,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Bak Kut Teh @ MalaysiaBoleh',          acct:'cash', meal:'Dinner'},
+
+  // ── 21 MAY 2026 ──
+  {id:500, date:'2026-05-21', amount:25.24/R,  orig:25.24,  cur:'MYR', catId:'c5',  type:'expense', pay:'cash',   note:'Hong Kong Zhai @ Work',               acct:'bank', meal:'Lunch'},
+  {id:501, date:'2026-05-21', amount:0.06/R,   orig:0.06,   cur:'MYR', catId:'c17', type:'income',  pay:'cash',   note:'RYT Bank Interest',                   acct:'bank'},
+  {id:502, date:'2026-05-21', amount:8.02/R,   orig:8.02,   cur:'MYR', catId:'c6',  type:'expense', pay:'cash',   note:'Bus / MRT',                           acct:'bank'},
+  {id:503, date:'2026-05-21', amount:6.50,     orig:6.50,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Kimchi Fried Rice @ Work',             acct:'cash', meal:'Lunch'},
+  {id:504, date:'2026-05-21', amount:6.50,     orig:6.50,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Pork Fried Rice @ MalaysiaBoleh',      acct:'cash', meal:'Dinner'},
+  {id:805, date:'2026-05-21', amount:1.00,     orig:1.00,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'MiXue Ice Cream',                      acct:'cash'},
+
+  // ── 22 MAY 2026 ──
+  {id:600, date:'2026-05-22', amount:0.06/R,   orig:0.06,   cur:'MYR', catId:'c17', type:'income',  pay:'cash',   note:'RYT Bank Interest',                   acct:'bank'},
+  {id:601, date:'2026-05-22', amount:5.94/R,   orig:5.94,   cur:'MYR', catId:'c6',  type:'expense', pay:'cash',   note:'Bus / MRT',                           acct:'bank'},
+  {id:602, date:'2026-05-22', amount:6.00,     orig:6.00,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Beef Kebab @ Bukit Panjang',           acct:'cash', meal:'Dinner'},
+
+  // ── 23 MAY 2026 ──
+  {id:700, date:'2026-05-23', amount:556.64/R, orig:556.64, cur:'MYR', catId:'c20', type:'expense', pay:'cash',   note:'Bugis Social 20th–24th',              acct:'bank'},
+  {id:701, date:'2026-05-23', amount:0.06/R,   orig:0.06,   cur:'MYR', catId:'c17', type:'income',  pay:'cash',   note:'RYT Bank Interest',                   acct:'bank'},
+  {id:702, date:'2026-05-23', amount:18.74/R,  orig:18.74,  cur:'MYR', catId:'c5',  type:'expense', pay:'cash',   note:'McD',                                 acct:'bank', meal:'Breakfast'},
+  {id:703, date:'2026-05-23', amount:5.00,     orig:5.00,   cur:'SGD', catId:'c18', type:'expense', pay:'wallet', note:'Laundry Washer',                       acct:'cash', laundry:'Washer'},
+  {id:704, date:'2026-05-23', amount:4.00,     orig:4.00,   cur:'SGD', catId:'c18', type:'expense', pay:'wallet', note:'Laundry Dryer',                        acct:'cash', laundry:'Dryer'},
+  {id:705, date:'2026-05-23', amount:1.40,     orig:1.40,   cur:'SGD', catId:'c19', type:'expense', pay:'wallet', note:'Sprite @ Vending Machine',             acct:'cash'},
+  {id:706, date:'2026-05-23', amount:4.20,     orig:4.20,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Duck & Siew Yok @ Bugis',              acct:'cash', meal:'Dinner'},
+
+  // ── 24 MAY 2026 ──
+  {id:800, date:'2026-05-24', amount:0.02/R,   orig:0.02,   cur:'MYR', catId:'c17', type:'income',  pay:'cash',   note:'RYT Bank Interest',                   acct:'bank'},
+  {id:801, date:'2026-05-24', amount:21.06/R,  orig:21.06,  cur:'MYR', catId:'c6',  type:'expense', pay:'cash',   note:'Bus / MRT',                           acct:'bank'},
+  {id:802, date:'2026-05-24', amount:0.30/R,   orig:0.30,   cur:'MYR', catId:'c17', type:'income',  pay:'cash',   note:'RYT Bank Interest',                   acct:'bank'},
+  {id:803, date:'2026-05-24', amount:50.00,    orig:50.00,  cur:'SGD', catId:'c20', type:'income',  pay:'wallet', note:'Hotel Deposit Refund (Bugis Social)',   acct:'cash'},
+  {id:807, date:'2026-05-24', amount:7000.00/R,orig:7000.00,cur:'MYR', catId:'c12', type:'income',  pay:'cash',   note:'Transfer from Dad',                   acct:'bank'},
+  {id:808, date:'2026-05-24', amount:945.71/R, orig:945.71, cur:'MYR', catId:'c15', type:'expense', pay:'cash',   note:'ATM Withdrawal Citibank (SGD 300)',     acct:'bank', atmSGD:300.00},
+  {id:809, date:'2026-05-24', amount:626.95/R, orig:626.95, cur:'MYR', catId:'c20', type:'expense', pay:'cash',   note:'Carlton Hotel',                        acct:'bank'},
+  {id:810, date:'2026-05-24', amount:478.85/R, orig:478.85, cur:'MYR', catId:'c15', type:'expense', pay:'cash',   note:'ATM Withdrawal Citibank (SGD 150)',     acct:'bank', atmSGD:150.00},
+  {id:811, date:'2026-05-24', amount:2400.00/R,orig:2400.00,cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:806, date:'2026-05-24', amount:60.00,    orig:60.00,  cur:'SGD', catId:'c13', type:'expense', pay:'wallet', note:'Gambling',                             acct:'cash'},
+  {id:812, date:'2026-05-24', amount:3.80,     orig:3.80,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Nasi Lemak',                           acct:'cash', meal:'Lunch'},
+  {id:813, date:'2026-05-24', amount:300.00,   orig:300.00, cur:'SGD', catId:'c13', type:'expense', pay:'wallet', note:'Gambling',                             acct:'cash'},
+  {id:814, date:'2026-05-24', amount:6.90,     orig:6.90,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Roasted Duck',                         acct:'cash', meal:'Dinner'},
+
+  // ── 25 MAY 2026 ──
+  {id:900, date:'2026-05-25', amount:24.50/R,  orig:24.50,  cur:'MYR', catId:'c6',  type:'expense', pay:'cash',   note:'Bus / MRT',                           acct:'bank'},
+  {id:901, date:'2026-05-25', amount:0.26/R,   orig:0.26,   cur:'MYR', catId:'c17', type:'income',  pay:'cash',   note:'RYT Bank Interest',                   acct:'bank'},
+  {id:902, date:'2026-05-25', amount:1600.00/R,orig:1600.00,cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                            acct:'bank'},
+  {id:903, date:'2026-05-25', amount:4747.00/R,orig:4747.00,cur:'MYR', catId:'c13', type:'income',  pay:'cash',   note:'Gambling Win',                        acct:'bank'},
+  {id:904, date:'2026-05-25', amount:791.00/R, orig:791.00, cur:'MYR', catId:'c9',  type:'expense', pay:'cash',   note:'JustMarkets (Deposit)',                acct:'bank'},
+  {id:905, date:'2026-05-25', amount:8.00,     orig:8.00,   cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Pork Chop Rice @ Work',                acct:'cash', meal:'Lunch'},
+
+  // ── 25 MAY 2026 (continued) ──
+  {id:906, date:'2026-05-25', amount:75.00/R,   orig:75.00,   cur:'MYR', catId:'c14', type:'expense', pay:'cash',   note:'Transfer to Sonia (Groceries)',        acct:'bank'},
+  {id:907, date:'2026-05-25', amount:1200.00/R, orig:1200.00, cur:'MYR', catId:'c13', type:'expense', pay:'cash',   note:'Gambling',                             acct:'bank'},
+  {id:908, date:'2026-05-25', amount:3435.59/R, orig:3435.59, cur:'MYR', catId:'c15', type:'expense', pay:'cash',   note:'ATM Withdrawal Citibank (SGD 1,100)',   acct:'bank', atmSGD:1100.00},
+  {id:909, date:'2026-05-25', amount:1200.00,   orig:1200.00, cur:'SGD', catId:'c3',  type:'expense', pay:'wallet', note:'Rental Room Deposit (Cash)',            acct:'cash'},
+  {id:911, date:'2026-05-25', amount:9.00,      orig:9.00,    cur:'SGD', catId:'c5',  type:'expense', pay:'wallet', note:'Shin Ramyun',                            acct:'cash', meal:'Dinner'},
+  {id:912, date:'2026-05-25', amount:5.50,      orig:5.50,    cur:'SGD', catId:'c7',  type:'expense', pay:'wallet', note:'Shampoo',                                acct:'cash'},
+  {id:913, date:'2026-05-25', amount:6.70,      orig:6.70,    cur:'SGD', catId:'c16', type:'income',  pay:'wallet', note:'Reconciliation Credit (Untracked Cash)', acct:'cash'},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────
+
+function loadTxs() {
+  try {
+    var s = localStorage.getItem('pw_v17');
+    if (s) return JSON.parse(s);
+  } catch(e){}
+  return INIT_TXS.map(function(t){return Object.assign({},t)});
+}
+
+function saveTxs() {
+  try { localStorage.setItem('pw_v17', JSON.stringify(txs)); } catch(e){}
+}
+
+var txs = loadTxs();
+
+// ── CALCULATIONS ──────────────────────────────────────────────────────
+// Bank = MYR account (all non-wallet transactions)
+// Cash Wallet = physical SGD cash (pay:'wallet' transactions + ATM SGD received)
+
+function calc() {
+  var bankIncome = 0, bankOut = 0;
+  var atmCashIn = 0;
+  var cashIn = 0, cashOut = 0;
+  var totalExp = 0;
+  var cardBal = 0;
+
+  txs.forEach(function(tx) {
+    var isCash = tx.pay === 'wallet';
+
+    if (tx.catId === 'c15') {
+      // ATM: MYR debit goes against bank; SGD received enters cash wallet
+      bankOut += tx.amount;
+      atmCashIn += (tx.atmSGD !== undefined ? tx.atmSGD : tx.amount);
+      totalExp += tx.amount;
+      return;
+    }
+
+    if (tx.type === 'income') {
+      if (isCash) cashIn += tx.amount;
+      else bankIncome += tx.amount;
+    } else if (tx.type === 'expense') {
+      totalExp += tx.amount;
+      if (isCash) {
+        cashOut += tx.amount;
+      } else if (tx.pay === 'card') {
+        cardBal += tx.amount;
+        bankOut += tx.amount;
+      } else if (tx.catId === 'c10') {
+        cardBal = Math.max(0, cardBal - tx.amount);
+        bankOut += tx.amount;
+      } else {
+        bankOut += tx.amount;
+      }
+    }
+  });
+
+  var bankSGD   = bankIncome - bankOut;
+  var cashWallet = cashIn + atmCashIn - cashOut;
+
+  // Use live rate for net worth conversion (Rec 2)
+  var bankSGDatLive = bankSGD; // bank is already stored as SGD-equivalent using historical rate
+  // Re-derive the original MYR amount and convert at live rate for accuracy
+  // bankSGD was computed using R=3.48; real MYR balance = bankSGD * R, then / liveRate gives live SGD
+  var bankMYR_orig    = bankSGD * R;           // original MYR balance
+  var bankSGD_live    = bankMYR_orig / liveRate; // SGD equivalent at live rate
+  var netWorthLive    = bankSGD_live + cashWallet;
+
+  return {
+    bankSGD:      bankSGD,
+    bankSGD_live: bankSGD_live,
+    bankMYR:      bankMYR_orig,
+    cashWallet:   cashWallet,
+    netWorth:     netWorthLive,       // now uses live rate
+    netWorthHist: bankSGD + cashWallet, // historical-rate version (kept for vault calc)
+    totalExp:     totalExp,
+    totalIncome:  bankIncome + cashIn,
+    cardBal:      cardBal
+  };
+}
+
+// ── MONTH HELPERS ─────────────────────────────────────────────────────
+
+// Returns sorted list of 'YYYY-MM' strings present in txs
+function getMonthList() {
+  var seen = {};
+  txs.forEach(function(t){ if(t.date) seen[t.date.slice(0,7)] = 1; });
+  return Object.keys(seen).sort();
+}
+
+// calc() scoped to a specific 'YYYY-MM' month (or all if empty)
+function calcForMonth(ym) {
+  var subset = ym ? txs.filter(function(t){ return t.date && t.date.slice(0,7) === ym; }) : txs;
+  var bankIncome=0, bankOut=0, atmCashIn=0, cashIn=0, cashOut=0, totalExp=0, cardBal=0;
+  subset.forEach(function(tx) {
+    var isCash = tx.pay === 'wallet';
+    if (tx.catId === 'c15') {
+      bankOut += tx.amount;
+      atmCashIn += (tx.atmSGD !== undefined ? tx.atmSGD : tx.amount);
+      totalExp += tx.amount;
+      return;
+    }
+    if (tx.type === 'income') {
+      if (isCash) cashIn += tx.amount; else bankIncome += tx.amount;
+    } else if (tx.type === 'expense') {
+      totalExp += tx.amount;
+      if (isCash) cashOut += tx.amount;
+      else if (tx.pay === 'card') { cardBal += tx.amount; bankOut += tx.amount; }
+      else if (tx.catId === 'c10') { cardBal = Math.max(0, cardBal - tx.amount); bankOut += tx.amount; }
+      else bankOut += tx.amount;
+    }
+  });
+  var bankSGD = bankIncome - bankOut;
+  var bankMYR_orig = bankSGD * R;
+  var bankSGD_live = bankMYR_orig / liveRate;
+  var cw = cashIn + atmCashIn - cashOut;
+  return {
+    bankSGD:     bankSGD,
+    bankSGD_live: bankSGD_live,
+    bankMYR:     bankMYR_orig,
+    cashWallet:  cw,
+    netWorth:    bankSGD_live + cw,
+    totalExp:    totalExp,
+    totalIncome: bankIncome + cashIn,
+    savingsNet:  (bankIncome + cashIn) - totalExp
+  };
+}
+
+// ── RESERVE VAULT HISTORY ─────────────────────────────────────────────
+var VAULT_TARGET = 1000; // SGD
+
+// For each past completed month, compute net savings (income - expenses in SGD)
+// Current month is "in progress"
+function vaultHistory() {
+  var months = getMonthList();
+  var now = new Date();
+  var currentYM = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'));
+  var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months.map(function(ym) {
+    var mc = calcForMonth(ym);
+    var parts = ym.split('-');
+    var label = MONTH_NAMES[parseInt(parts[1])-1] + ' ' + parts[0];
+    var isCurrent = ym === currentYM;
+    var saved = mc.savingsNet; // net in SGD for that month
+    var hit = saved >= VAULT_TARGET;
+    return { ym:ym, label:label, saved:saved, hit:hit, isCurrent:isCurrent };
+  });
+}
+
+// ── DAILY SPEND TARGET ────────────────────────────────────────────────
+function dailySpendInfo() {
+  var now = new Date();
+  var ym = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'));
+  var daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  var dayOfMonth = now.getDate();
+  var daysLeft = daysInMonth - dayOfMonth + 1; // including today
+
+  // Monthly income (salary-type only, not gambling wins or dad transfers for this calc)
+  var monthlyIncome = txs
+    .filter(function(t){ return t.date && t.date.slice(0,7)===ym && t.type==='income' && t.catId==='c1'; })
+    .reduce(function(s,t){ return s+t.amount; }, 0);
+
+  // Total expenses so far this month
+  var monthExp = txs
+    .filter(function(t){ return t.date && t.date.slice(0,7)===ym && t.type==='expense'; })
+    .reduce(function(s,t){ return s+t.amount; }, 0);
+
+  // Budget ceiling = income - vault target (what can be spent total this month)
+  var spendBudget = Math.max(0, monthlyIncome - VAULT_TARGET);
+
+  // Today's expenses
+  var todayStr = now.toISOString().slice(0,10);
+  var todayExp = txs
+    .filter(function(t){ return t.date === todayStr && t.type==='expense'; })
+    .reduce(function(s,t){ return s+t.amount; }, 0);
+
+  // Daily ceiling = remaining spendable / days left
+  var remaining = Math.max(0, spendBudget - monthExp + todayExp); // re-add today since "days left" includes today
+  var dailyCeil = daysLeft > 0 ? remaining / daysLeft : 0;
+
+  return {
+    dailyCeil:   dailyCeil,
+    todayExp:    todayExp,
+    daysLeft:    daysLeft,
+    spendBudget: spendBudget,
+    monthExp:    monthExp,
+    pct:         spendBudget > 0 ? Math.min(100, (monthExp / spendBudget) * 100) : 0
+  };
+}
+
+
+
+function fmt(sgdAmt, origAmt, origCur) {
+  if (isDiscreet) return '••••';
+  var rate = baseCur === 'MYR' ? liveRate : 1;
+  var sym  = baseCur === 'MYR' ? 'RM ' : 'S$';
+  var val;
+  if (origCur && origCur === baseCur && origAmt !== undefined) {
+    val = origAmt;
+  } else {
+    val = sgdAmt * rate;
+  }
+  return sym + val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function cat(id) {
+  return CATS.find(function(c){return c.id===id}) || {name:'Other',icon:'•',bg:'#1e293b',col:'#94a3b8'};
+}
+
+// ── RENDER HELPERS ────────────────────────────────────────────────────
+
+function txRow(tx, allowEdit) {
+  var c = cat(tx.catId);
+  var isPos = tx.type === 'income';
+  var meta = c.name;
+  if (tx.pay === 'wallet') meta += ' • Cash';
+  else if (tx.pay === 'card') meta += ' • UOB';
+  else meta += ' • Bank';
+  if (tx.meal) meta += ' • ' + tx.meal;
+  if (tx.laundry) meta += ' • ' + tx.laundry;
+
+  var dateStr = '';
+  if (tx.date) {
+    var dp = tx.date.split('-');
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    dateStr = parseInt(dp[2]) + ' ' + months[parseInt(dp[1])-1] + ' ' + dp[0];
+  }
+
+  var origBadge = (tx.cur && tx.cur !== 'SGD')
+    ? '<span class="badge">' + tx.cur + ' ' + tx.orig.toFixed(2) + '</span>'
+    : '';
+
+  var dateBadge = allowEdit && dateStr
+    ? '<span style="font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:rgba(255,255,255,.06);color:#64748b;padding:2px 7px;border-radius:4px;margin-left:6px">'+dateStr+'</span>'
+    : '';
+
+  var editDel = allowEdit
+    ? '<div style="display:flex;gap:12px;margin-top:6px">'
+      + '<button onclick="editTx('+tx.id+')" style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(251,191,36,.6);background:none;border:none;cursor:pointer">✏ Edit</button>'
+      + '<button onclick="deleteTx('+tx.id+')" style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(239,68,68,.6);background:none;border:none;cursor:pointer">🗑 Delete</button>'
+      + '</div>'
+    : '';
+
+  return '<div class="card-row" style="margin-bottom:8px">'
+    + '<div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0">'
+    + '<div class="icon-wrap" style="background:'+c.bg+'"><span>'+c.icon+'</span></div>'
+    + '<div style="min-width:0">'
+    + '<div class="tx-note" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+tx.note+'</div>'
+    + '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:4px"><span class="tx-meta">'+meta+'</span>'+dateBadge+'</div>'
+    + origBadge
+    + editDel
+    + '</div></div>'
+    + '<div class="tx-amt '+(isPos?'pos':'neg')+'" style="margin-left:8px">'+(isPos?'+':'-')+fmt(tx.amount, tx.orig, tx.cur).replace(/^(RM |S\$)/,'')+'</div>'
+    + '</div>';
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────
+
+function renderHome() {
+  var c = calc();
+  var goalPct  = Math.min(100, (c.netWorth / 100000) * 100);
+  var recent   = txs.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date)}).slice(0,4);
+
+  // ── Reserve Vault: current-month net savings ──
+  var now = new Date();
+  var currentYM = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'));
+  var mc = calcForMonth(currentYM);
+  var vaultSaved = mc.savingsNet;
+  var vaultPct   = Math.min(100, Math.max(0, (vaultSaved / VAULT_TARGET) * 100));
+  var vaultCol   = vaultPct >= 100 ? '#fbbf24' : vaultPct >= 60 ? '#f59e0b' : '#64748b';
+  var vaultLabel = vaultPct >= 100 ? 'Target Hit ✓' : (isDiscreet ? '•••' : 'S$'+Math.max(0,vaultSaved).toFixed(2));
+
+  // Days left this month
+  var daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  var daysLeft = daysInMonth - now.getDate();
+
+  // ── Daily Spend Target ──
+  var ds = dailySpendInfo();
+  var dsBudgetCol = ds.pct >= 100 ? '#ef4444' : ds.pct >= 80 ? '#f59e0b' : '#34d399';
+  var dsDayCol    = ds.todayExp <= ds.dailyCeil ? '#34d399' : '#f87171';
+
+  // Reconciliation note
+  var reconHtml = '<div class="recon-banner">⚠️ <strong>Reconciliation Note:</strong> Computed cash S$142.30 vs actual S$146.90 (S$4.60 variance). Bank MYR differs by RM 0.10 (rounding only).</div>';
+
+  return reconHtml
+    + '<div class="card amberglow">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    + '<span class="label">Global Net Worth</span>'
+    + '<span style="padding:4px 10px;border-radius:99px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.05);font-size:9px;font-weight:700;color:#fbbf24;letter-spacing:.1em">MAY 2026</span>'
+    + '</div>'
+    + '<div id="nw-amount" class="nw-amount" onclick="cycleCurrency()">'+fmt(c.netWorth)+'</div>'
+    + '<div class="nw-sub">🌐 Displaying in '+baseCur+' — tap to swap</div>'
+    + (liveRate !== R ? '<div style="font-size:9px;color:rgba(52,211,153,.7);font-weight:600;margin-top:4px">Live rate: 1 SGD = '+liveRate.toFixed(4)+' MYR (historical: '+R+')</div>' : '<div style="font-size:9px;color:#475569;font-weight:600;margin-top:4px">Using historical rate 1 SGD = '+R+' MYR (live rate unavailable)</div>')
+    + '<div class="nw-grid">'
+    + '<div><div class="nw-cell-label">Bank (MYR)</div><div class="nw-cell-val">'+(isDiscreet?'••••':'RM '+c.bankMYR.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','))+'</div></div>'
+    + '<div><div class="nw-cell-label">Cash Wallet</div><div class="nw-cell-val">'+(isDiscreet?'••••':'S$'+c.cashWallet.toFixed(2))+'</div></div>'
+    + '<div><div class="nw-cell-label">Investments</div><div class="nw-cell-val">'+fmt(0)+'</div></div>'
+    + '</div></div>'
+
+    // ── Reserve Vault (full width, redesigned) ──
+    + '<div class="card-sm gap" style="cursor:pointer" onclick="openVaultHistory()">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">'
+    + '<div>'
+    + '<div class="label" style="margin-bottom:4px">Reserve Vault — May 2026</div>'
+    + '<div style="font-size:22px;font-weight:700;color:'+vaultCol+'">'+vaultLabel+'</div>'
+    + '<div style="font-size:9px;color:#475569;font-weight:600;margin-top:3px">Target S$'+VAULT_TARGET+' · '+daysLeft+' days left</div>'
+    + '</div>'
+    + '<div style="text-align:right">'
+    + '<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#475569;margin-bottom:4px">Progress</div>'
+    + '<div style="font-size:18px;font-weight:700;color:'+vaultCol+'">'+(isDiscreet?'••%':vaultPct.toFixed(0)+'%')+'</div>'
+    + '</div></div>'
+    + '<div class="pbar-wrap" style="height:6px"><div class="pbar" style="width:'+vaultPct+'%;background:'+vaultCol+'"></div></div>'
+    + '<div style="font-size:9px;color:#475569;font-weight:600;margin-top:8px">Tap to view monthly history ›</div>'
+    + '</div>'
+
+    // ── 2-col: Daily Spend + Centurion ──
+    + '<div class="grid2 gap">'
+
+    // Daily Spend Target
+    + '<div class="card-sm">'
+    + '<div class="label" style="margin-bottom:8px">Daily Ceiling</div>'
+    + '<div style="font-size:18px;font-weight:700;color:'+dsBudgetCol+';margin-bottom:2px">'+(isDiscreet?'•••':'S$'+ds.dailyCeil.toFixed(2))+'</div>'
+    + '<div style="font-size:9px;color:#475569;font-weight:600;margin-bottom:8px">per day remaining</div>'
+    + '<div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:#475569;margin-bottom:4px">'
+    + '<span>Today</span><span style="color:'+dsDayCol+'">'+(isDiscreet?'••':'S$'+ds.todayExp.toFixed(2))+'</span>'
+    + '</div>'
+    + '<div class="pbar-wrap"><div class="pbar" style="width:'+ds.pct+'%;background:'+dsBudgetCol+'"></div></div>'
+    + '</div>'
+
+    // Centurion
+    + '<div class="card-sm"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'
+    + '<div class="label" style="line-height:1.4">Centurion<br>Milestone</div>'
+    + '<span style="font-size:10px;font-weight:700;color:#34d399;background:rgba(52,211,153,.1);padding:2px 6px;border-radius:4px">'+(isDiscreet?'••%':goalPct.toFixed(1)+'%')+'</span>'
+    + '</div><div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:8px">'+(isDiscreet?'••••':fmt(c.netWorth).replace(/^(RM |S\$)/,''))+' <span style="font-size:10px;color:#334155">/ 100k</span></div>'
+    + '<div class="pbar-wrap"><div class="pbar" style="width:'+goalPct+'%;background:#22c55e"></div></div>'
+    + '</div></div>'
+
+    + '<div class="gap"><div class="sec-hdr">'
+    + '<span class="sec-title">Recent Ledger</span>'
+    + '<button class="sec-link" onclick="openLedger()">View All ›</button>'
+    + '</div>'
+    + recent.map(function(tx){return txRow(tx, false)}).join('')
+    + '</div>';
+}
+
+// ── VAULT HISTORY MODAL ───────────────────────────────────────────────
+function openVaultHistory() {
+  var old = document.getElementById('vault-history-fs');
+  if (old) old.parentNode.removeChild(old);
+
+  var history = vaultHistory();
+  var MONTH_HIT_ALL = history.filter(function(h){ return !h.isCurrent; }).every(function(h){ return h.hit; });
+
+  var rows = history.slice().reverse().map(function(h) {
+    var col   = h.hit ? '#34d399' : h.isCurrent ? '#fbbf24' : '#f87171';
+    var badge = h.isCurrent
+      ? '<span style="font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(251,191,36,.1);color:#fbbf24;padding:2px 7px;border-radius:4px">In Progress</span>'
+      : (h.hit
+        ? '<span style="font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(52,211,153,.1);color:#34d399;padding:2px 7px;border-radius:4px">✓ Hit</span>'
+        : '<span style="font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(239,68,68,.1);color:#f87171;padding:2px 7px;border-radius:4px">✗ Missed</span>');
+    var pct = Math.min(100, Math.max(0, (h.saved / VAULT_TARGET)*100));
+    return '<div class="card-row" style="margin-bottom:8px;flex-direction:column;align-items:stretch;gap:10px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center">'
+      + '<div><div style="font-size:14px;font-weight:600;color:#e2e8f0">'+h.label+'</div>'
+      + '<div style="margin-top:4px">'+badge+'</div></div>'
+      + '<div style="text-align:right"><div style="font-size:16px;font-weight:700;color:'+col+'">'
+      + (isDiscreet?'••••':'S$'+Math.max(0,h.saved).toFixed(2))+'</div>'
+      + '<div style="font-size:9px;color:#475569;font-weight:600;margin-top:2px">of S$'+VAULT_TARGET+' target</div>'
+      + '</div></div>'
+      + '<div class="pbar-wrap" style="height:5px"><div class="pbar" style="width:'+pct+'%;background:'+col+'"></div></div>'
+      + '</div>';
+  }).join('');
+
+  var completedCount = history.filter(function(h){ return !h.isCurrent && h.hit; }).length;
+  var totalPast = history.filter(function(h){ return !h.isCurrent; }).length;
+  var streak = 0;
+  var sorted = history.slice().reverse();
+  for (var i=0; i<sorted.length; i++) {
+    if (!sorted[i].isCurrent && sorted[i].hit) streak++;
+    else if (!sorted[i].isCurrent) break;
+  }
+
+  var summaryHtml = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px">'
+    + '<div class="card-sm" style="text-align:center"><div class="label" style="margin-bottom:6px">Hit Rate</div>'
+    + '<div style="font-size:20px;font-weight:700;color:#fbbf24">'+(totalPast>0?Math.round(completedCount/totalPast*100):0)+'%</div></div>'
+    + '<div class="card-sm" style="text-align:center"><div class="label" style="margin-bottom:6px">Months Hit</div>'
+    + '<div style="font-size:20px;font-weight:700;color:#34d399">'+completedCount+'/'+totalPast+'</div></div>'
+    + '<div class="card-sm" style="text-align:center"><div class="label" style="margin-bottom:6px">Streak</div>'
+    + '<div style="font-size:20px;font-weight:700;color:#a5b4fc">'+streak+'</div></div>'
+    + '</div>';
+
+  var fs = document.createElement('div');
+  fs.id = 'vault-history-fs';
+  fs.className = 'fullscreen';
+  fs.innerHTML = '<div class="fs-header">'
+    + '<div class="fs-title">🏦 Reserve Vault History</div>'
+    + '<button class="fs-close" onclick="closeVaultHistory()">✕</button>'
+    + '</div>'
+    + '<div class="fs-body">'
+    + summaryHtml
+    + '<div class="sec-title" style="margin-bottom:12px">Monthly Record</div>'
+    + rows
+    + '</div>';
+  document.getElementById('app').appendChild(fs);
+}
+
+function closeVaultHistory() {
+  var el = document.getElementById('vault-history-fs');
+  if (el) el.parentNode.removeChild(el);
+}
+
+
+function renderBudget() {
+  // ── Month selector ──
+  var months = getMonthList();
+  var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Default to current month on first load
+  if (!selectedMonth && months.length) {
+    var now = new Date();
+    var ym = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'));
+    selectedMonth = months.indexOf(ym) !== -1 ? ym : months[months.length-1];
+  }
+
+  var monthChips = '<div class="chips" style="margin-bottom:20px">'
+    + '<button class="chip'+(selectedMonth===''?' on':'')+'" onclick="setSelectedMonth(\'\')">All Time</button>'
+    + months.map(function(ym){
+        var parts = ym.split('-');
+        var lbl = MONTH_NAMES[parseInt(parts[1])-1]+' '+parts[0];
+        return '<button class="chip'+(selectedMonth===ym?' on':'')+'" onclick="setSelectedMonth(\''+ym+'\')">'+lbl+'</button>';
+      }).join('')
+    + '</div>';
+
+  // Filter transactions to selected month
+  var scopedTxs = selectedMonth
+    ? txs.filter(function(t){ return t.date && t.date.slice(0,7) === selectedMonth; })
+    : txs;
+
+  var filters = ['all','fixed','variable','investment','mixed'];
+  var filterChips = '<div class="chips" style="margin-bottom:20px">'
+    + filters.map(function(f){
+        var lbl = f==='mixed'?'Gambling':f;
+        return '<button class="chip'+(budgetFilter===f?' on':'')+'" onclick="setBudgetFilter(\''+f+'\')">'+(lbl.charAt(0).toUpperCase()+lbl.slice(1))+'</button>';
+      }).join('')
+    + '</div>';
+
+  var expCats = CATS.filter(function(c){ return c.type !== 'income'; });
+  if (budgetFilter !== 'all') expCats = expCats.filter(function(c){ return c.type === budgetFilter; });
+
+  var rows = expCats.map(function(c){
+    var lim   = BUDGETS[c.id] || 0;
+    var spent = scopedTxs.filter(function(t){return t.catId===c.id && t.type==='expense'})
+                         .reduce(function(s,t){return s+t.amount},0);
+    var gamblingIncome = (c.id==='c13')
+      ? scopedTxs.filter(function(t){return t.catId==='c13' && t.type==='income'}).reduce(function(s,t){return s+t.amount},0)
+      : 0;
+    var pct = lim>0 ? Math.min(100,(spent/lim)*100) : 0;
+    var barCol = '#94a3b8';
+    if (pct>=85) barCol='#f59e0b';
+    if (pct>=100) barCol='#ef4444';
+    if (c.type==='investment') barCol='#34d399';
+    if (c.type==='mixed') barCol='#a855f7';
+    if (c.id==='c18') barCol='#38bdf8';
+    if (c.id==='c20') barCol='#60a5fa';
+
+    var gamblingNote = c.id==='c13' && gamblingIncome>0
+      ? '<div style="font-size:9px;color:#34d399;font-weight:700;margin-top:4px">Net: '+(spent>gamblingIncome?'-':'+')+(Math.abs(spent-gamblingIncome)*(baseCur==='MYR'?liveRate:1)).toFixed(2)+'</div>'
+      : '';
+
+    return '<div class="card-sm" style="margin-bottom:12px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+      + '<div style="display:flex;align-items:center;gap:14px">'
+      + '<div class="icon-wrap" style="background:'+c.bg+'">'+c.icon+'</div>'
+      + '<div><div style="font-size:14px;font-weight:500;color:#e2e8f0">'+c.name+'</div>'
+      + '<div class="label" style="margin-top:2px">'+c.type+'</div></div></div>'
+      + '<div style="text-align:right"><div style="font-size:14px;font-weight:600;color:#f1f5f9">'+fmt(spent).replace(/^(RM |S\$)/,'')+'</div>'
+      + '<div style="font-size:10px;color:#475569;margin-top:2px">Limit: '+(lim?lim:'—')+'</div>'
+      + gamblingNote
+      + '</div></div>'
+      + '<div class="pbar-wrap"><div class="pbar" style="width:'+Math.max(pct,1)+'%;background:'+barCol+'"></div></div>'
+      + '</div>';
+  }).join('');
+
+  var totalSpent = scopedTxs.filter(function(t){return t.type==='expense'}).reduce(function(s,t){return s+t.amount},0);
+  var totalIn    = scopedTxs.filter(function(t){return t.type==='income'}).reduce(function(s,t){return s+t.amount},0);
+  var net = totalIn - totalSpent;
+  var scopeLabel = selectedMonth
+    ? (function(){ var p=selectedMonth.split('-'); return MONTH_NAMES[parseInt(p[1])-1]+' '+p[0]; })()
+    : 'All Time';
+
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    + '<div class="title">Allocation</div>'
+    + '<span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fbbf24;background:rgba(251,191,36,.08);padding:3px 8px;border-radius:4px">'+scopeLabel+'</span>'
+    + '</div>'
+    + monthChips
+    + '<div class="card-sm" style="margin-bottom:20px;display:flex;gap:0">'
+    + '<div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,.06)">'
+    + '<div class="label" style="margin-bottom:6px">Total In</div>'
+    + '<div style="font-size:16px;font-weight:700;color:#34d399">+'+fmt(totalIn)+'</div></div>'
+    + '<div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,.06)">'
+    + '<div class="label" style="margin-bottom:6px">Total Out</div>'
+    + '<div style="font-size:16px;font-weight:700;color:#f87171">-'+fmt(totalSpent)+'</div></div>'
+    + '<div style="flex:1;text-align:center">'
+    + '<div class="label" style="margin-bottom:6px">Net</div>'
+    + '<div style="font-size:16px;font-weight:700;color:'+(net>=0?'#34d399':'#f87171')+'">'+(net>=0?'+':'')+fmt(Math.abs(net))+'</div></div>'
+    + '</div>'
+    + filterChips
+    + rows;
+}
+
+
+function renderInvest() {
+  return '<div class="title" style="margin-bottom:20px">Markets</div>'
+    + '<div class="card"><div class="label" style="margin-bottom:8px">Total Holdings</div>'
+    + '<div style="font-size:40px;font-weight:600;color:#f1f5f9">'+fmt(0)+'</div>'
+    + '<div style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;background:rgba(52,211,153,.1)">'
+    + '<span style="font-size:11px;font-weight:700;color:#34d399">↗ 0.00 (0.00%)</span></div>'
+    + '</div>'
+    + '<div class="gap-sm"><div class="label" style="margin-bottom:12px">Current Assets</div>'
+    + [['BTC','Bitcoin','🪙','#f59e0b'],['ETH','Ethereum','💎','#94a3b8'],['XRP','Ripple','💠','#60a5fa'],['GOLD','Physical Gold','🥇','#eab308']]
+      .map(function(a){
+        return '<div class="card-row" style="margin-bottom:8px">'
+          + '<div style="display:flex;align-items:center;gap:14px">'
+          + '<div class="icon-wrap" style="background:rgba(255,255,255,.05);font-size:18px">'+a[2]+'</div>'
+          + '<div><div style="font-size:14px;font-weight:600;color:#e2e8f0">'+a[0]+'</div>'
+          + '<div style="font-size:10px;color:#475569;margin-top:2px">'+a[1]+'</div></div></div>'
+          + '<div style="text-align:right"><div style="font-size:14px;font-weight:600;color:#f1f5f9">'+fmt(0)+'</div>'
+          + '<div style="font-size:10px;color:#34d399;font-weight:700;margin-top:4px">+0.00%</div></div></div>';
+      }).join('')
+    + '</div>';
+}
+
+// ── DONUT CHART (Rec 3) ───────────────────────────────────────────────
+function buildDonut(slices, cx, cy, r, stroke) {
+  // slices: [{pct, col}]
+  var total = slices.reduce(function(s,sl){return s+sl.pct;},0);
+  if (total <= 0) return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#1e293b" stroke-width="'+stroke+'"/>';
+  var svgParts = '';
+  var circ = 2 * Math.PI * r;
+  var offset = 0;
+  slices.forEach(function(sl){
+    var dash = (sl.pct / total) * circ;
+    var gap  = circ - dash;
+    svgParts += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'"'
+      + ' fill="none" stroke="'+sl.col+'" stroke-width="'+stroke+'"'
+      + ' stroke-dasharray="'+dash.toFixed(2)+' '+gap.toFixed(2)+'"'
+      + ' stroke-dashoffset="'+(-offset).toFixed(2)+'"'
+      + ' transform="rotate(-90 '+cx+' '+cy+')" />';
+    offset += dash;
+  });
+  return svgParts;
+}
+
+function renderSpendingDonut(scopedTxs) {
+  // Build per-category spending totals (expenses only, exclude ATM)
+  var catTotals = {};
+  scopedTxs.forEach(function(t){
+    if (t.type !== 'expense' || t.catId === 'c15') return;
+    catTotals[t.catId] = (catTotals[t.catId] || 0) + t.amount;
+  });
+  var entries = Object.keys(catTotals).map(function(id){
+    var c = cat(id);
+    return {id:id, name:c.name, icon:c.icon, col:c.col, amount:catTotals[id]};
+  }).sort(function(a,b){return b.amount-a.amount});
+
+  if (entries.length === 0) return '<div style="text-align:center;color:#475569;font-size:12px;padding:24px 0">No expenses in this period</div>';
+
+  var total = entries.reduce(function(s,e){return s+e.amount;},0);
+  var slices = entries.map(function(e){return {pct:e.amount/total*100, col:e.col};});
+
+  var svgInner = buildDonut(slices, 90, 90, 68, 22);
+  var topCats = entries.slice(0,5);
+
+  var legendRows = topCats.map(function(e){
+    var pct = (e.amount/total*100).toFixed(1);
+    return '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+      + '<div style="display:flex;align-items:center;gap:8px">'
+      + '<div style="width:10px;height:10px;border-radius:50%;background:'+e.col+';flex-shrink:0"></div>'
+      + '<span style="font-size:11px;font-weight:500;color:#cbd5e1">'+e.icon+' '+e.name+'</span>'
+      + '</div>'
+      + '<div style="text-align:right">'
+      + '<span style="font-size:11px;font-weight:700;color:#f1f5f9">'+fmt(e.amount)+'</span>'
+      + '<span style="font-size:9px;color:#475569;margin-left:6px">'+pct+'%</span>'
+      + '</div></div>';
+  }).join('');
+
+  if (entries.length > 5) {
+    var otherAmt = entries.slice(5).reduce(function(s,e){return s+e.amount;},0);
+    legendRows += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+      + '<div style="display:flex;align-items:center;gap:8px">'
+      + '<div style="width:10px;height:10px;border-radius:50%;background:#334155;flex-shrink:0"></div>'
+      + '<span style="font-size:11px;font-weight:500;color:#cbd5e1">Other ('+(entries.length-5)+')</span>'
+      + '</div><span style="font-size:11px;font-weight:700;color:#f1f5f9">'+fmt(otherAmt)+'</span></div>';
+  }
+
+  return '<div class="card" style="margin-bottom:16px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
+    + '<div style="font-size:14px;font-weight:600;color:#e2e8f0">Spending by Category</div>'
+    + '<span style="font-size:9px;font-weight:700;color:#475569">Total: '+fmt(total)+'</span>'
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:20px">'
+    + '<div style="flex-shrink:0">'
+    + '<svg width="180" height="180" viewBox="0 0 180 180">'
+    + '<circle cx="90" cy="90" r="68" fill="none" stroke="#0a0b0e" stroke-width="22"/>'
+    + svgInner
+    + '<text x="90" y="86" text-anchor="middle" fill="#f1f5f9" font-size="15" font-weight="700" font-family="-apple-system,sans-serif">'+(isDiscreet?'••••':fmt(total).replace(/^(RM |S\$)/,''))+'</text>'
+    + '<text x="90" y="102" text-anchor="middle" fill="#475569" font-size="9" font-weight="700" font-family="-apple-system,sans-serif" letter-spacing="1">SPENT</text>'
+    + '</svg>'
+    + '</div>'
+    + '<div style="flex:1;min-width:0">'+legendRows+'</div>'
+    + '</div></div>';
+}
+
+// ── WEEKLY WATERFALL (Rec 5) ──────────────────────────────────────────
+function renderWeeklyWaterfall(scopedTxs, ym) {
+  if (!ym) return '';
+
+  var parts   = ym.split('-');
+  var year    = parseInt(parts[0]);
+  var month   = parseInt(parts[1]) - 1;
+  var daysInM = new Date(year, month+1, 0).getDate();
+
+  // Build week buckets: week 1 = days 1-7, week 2 = 8-14, week 3 = 15-21, week 4 = 22+
+  var weeks = [
+    {label:'Wk 1', days:[1,7],  in:0, out:0},
+    {label:'Wk 2', days:[8,14], in:0, out:0},
+    {label:'Wk 3', days:[15,21],in:0, out:0},
+    {label:'Wk 4', days:[22,daysInM], in:0, out:0},
+  ];
+
+  scopedTxs.forEach(function(t){
+    if (!t.date) return;
+    var day = parseInt(t.date.split('-')[2]);
+    var wk  = day <= 7 ? 0 : day <= 14 ? 1 : day <= 21 ? 2 : 3;
+    if (t.type === 'income') weeks[wk].in  += t.amount;
+    else if (t.type === 'expense' && t.catId !== 'c15') weeks[wk].out += t.amount;
+  });
+
+  var maxAbs = 0;
+  weeks.forEach(function(w){
+    maxAbs = Math.max(maxAbs, Math.abs(w.in - w.out), w.in, w.out);
+  });
+  if (maxAbs === 0) maxAbs = 1;
+
+  var BAR_H = 80;   // max bar height in px
+  var BAR_W = 36;
+  var GAP   = 16;
+  var totalW = weeks.length * (BAR_W * 2 + GAP + 12);  // 2 bars + gap per week
+  var svgH   = BAR_H + 48;
+
+  var bars = weeks.map(function(w, i){
+    var inH   = Math.max(2, (w.in  / maxAbs) * BAR_H);
+    var outH  = Math.max(2, (w.out / maxAbs) * BAR_H);
+    var net   = w.in - w.out;
+    var netCol= net >= 0 ? '#34d399' : '#f87171';
+    var xBase = i * (BAR_W * 2 + GAP + 12);
+
+    return '<g transform="translate('+xBase+',0)">'
+      // Income bar
+      + '<rect x="0" y="'+(BAR_H-inH)+'" width="'+BAR_W+'" height="'+inH+'" rx="4" fill="rgba(52,211,153,.5)"/>'
+      // Expense bar
+      + '<rect x="'+(BAR_W+6)+'" y="'+(BAR_H-outH)+'" width="'+BAR_W+'" height="'+outH+'" rx="4" fill="rgba(248,113,113,.5)"/>'
+      // Week label
+      + '<text x="'+(BAR_W)+'" y="'+(BAR_H+14)+'" text-anchor="middle" fill="#475569" font-size="9" font-weight="700" font-family="-apple-system,sans-serif">'+w.label+'</text>'
+      // Net label
+      + '<text x="'+(BAR_W)+'" y="'+(BAR_H+26)+'" text-anchor="middle" fill="'+netCol+'" font-size="8" font-weight="700" font-family="-apple-system,sans-serif">'+(net>=0?'+':'')+fmt(Math.abs(net)).replace(/^(RM |S\$)/,'')+'</text>'
+      + '</g>';
+  }).join('');
+
+  return '<div class="card" style="margin-bottom:16px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    + '<div style="font-size:14px;font-weight:600;color:#e2e8f0">Weekly Cash Flow</div>'
+    + '<div style="display:flex;gap:12px;align-items:center">'
+    + '<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:2px;background:rgba(52,211,153,.5)"></div><span style="font-size:9px;color:#475569;font-weight:600">In</span></div>'
+    + '<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:2px;background:rgba(248,113,113,.5)"></div><span style="font-size:9px;color:#475569;font-weight:600">Out</span></div>'
+    + '</div></div>'
+    + '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+    + '<svg width="'+totalW+'" height="'+svgH+'" viewBox="0 0 '+totalW+' '+svgH+'">'
+    + bars
+    + '</svg></div></div>';
+}
+
+function renderInsights() {
+  var c = calc();
+  var savingsRate = c.totalIncome > 0 ? Math.round(((c.totalIncome - c.totalExp) / c.totalIncome) * 100) : 0;
+
+  // Month scope for charts
+  var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var months = getMonthList();
+  if (!selectedMonth && months.length) {
+    var now2 = new Date();
+    var ym2  = now2.getFullYear()+'-'+(String(now2.getMonth()+1).padStart(2,'0'));
+    selectedMonth = months.indexOf(ym2) !== -1 ? ym2 : months[months.length-1];
+  }
+  var scopedTxs = selectedMonth
+    ? txs.filter(function(t){ return t.date && t.date.slice(0,7) === selectedMonth; })
+    : txs;
+  var scopeLabel = selectedMonth
+    ? (function(){ var p=selectedMonth.split('-'); return MONTH_NAMES[parseInt(p[1])-1]+' '+p[0]; })()
+    : 'All Time';
+
+  // Month picker chips (same as Budget)
+  var monthChips = '<div class="chips" style="margin-bottom:20px">'
+    + '<button class="chip'+(selectedMonth===''?' on':'')+'" onclick="setSelectedMonth(\'\')">All Time</button>'
+    + months.map(function(ym){
+        var p=ym.split('-');
+        var lbl=MONTH_NAMES[parseInt(p[1])-1]+' '+p[0];
+        return '<button class="chip'+(selectedMonth===ym?' on':'')+'" onclick="setSelectedMonth(\''+ym+'\')">'+lbl+'</button>';
+      }).join('')
+    + '</div>';
+
+  // Gambling P&L
+  var gambLoss = txs.filter(function(t){return t.catId==='c13'&&t.type==='expense'}).reduce(function(s,t){return s+t.amount},0);
+  var gambWin  = txs.filter(function(t){return t.catId==='c13'&&t.type==='income'}).reduce(function(s,t){return s+t.amount},0);
+  var gambNet  = gambWin - gambLoss;
+  var gambCol  = gambNet >= 0 ? '#34d399' : '#f87171';
+
+  // Income breakdown
+  var salaryIncome = txs.filter(function(t){return t.catId==='c1'&&t.type==='income'}).reduce(function(s,t){return s+t.amount},0);
+  var dadIncome    = txs.filter(function(t){return t.catId==='c12'&&t.type==='income'}).reduce(function(s,t){return s+t.amount},0);
+
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    + '<div class="title">Intelligence</div>'
+    + '<span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fbbf24;background:rgba(251,191,36,.08);padding:3px 8px;border-radius:4px">'+scopeLabel+'</span>'
+    + '</div>'
+    + monthChips
+    + '<div class="grid2" style="margin-bottom:16px">'
+    + '<div class="card-sm"><div class="label" style="margin-bottom:6px">Efficiency Ratio</div>'
+    + '<div style="font-size:36px;font-weight:600;color:#fbbf24">'+(isDiscreet?'••':savingsRate)+'%</div>'
+    + '<div style="font-size:9px;color:#475569;margin-top:4px;font-weight:600">Savings Rate</div></div>'
+    + '<div class="card-sm"><div class="label" style="margin-bottom:6px">Gambling P&L</div>'
+    + '<div style="font-size:28px;font-weight:600;color:'+gambCol+'">'+(isDiscreet?'••••':(gambNet>=0?'+':'')+fmt(Math.abs(gambNet)))+'</div>'
+    + '<div style="font-size:9px;color:#475569;margin-top:4px;font-weight:600">Net this period</div></div>'
+    + '</div>'
+    + renderSpendingDonut(scopedTxs)
+    + (selectedMonth ? renderWeeklyWaterfall(scopedTxs, selectedMonth) : '')
+    + '<div class="card" style="margin-bottom:16px">'
+    + '<div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:16px">Income Breakdown</div>'
+    + '<div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin-bottom:6px">'
+    + '<span>Salary</span><span style="color:#fde68a">'+fmt(salaryIncome)+'</span></div>'
+    + '<div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin-bottom:6px">'
+    + '<span>From Dad</span><span style="color:#a5b4fc">'+fmt(dadIncome)+'</span></div>'
+    + '</div>'
+    + '<div class="card"><div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:4px">Singapore Compliance</div>'
+    + '<div class="label" style="margin-bottom:16px">Estimated IRAS</div>'
+    + '<div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin-bottom:6px">'
+    + '<span>Projected Annual Tax</span><span style="color:#f87171">'+fmt(0)+'</span></div>'
+    + '<div class="pbar-wrap"><div class="pbar" style="width:5%;background:#ef4444"></div></div>'
+    + '</div>';
+}
+
+function renderGamble() {
+  // ── GAMBLING ──
+  var gambTxs  = txs.filter(function(t){return t.catId==='c13'});
+  var gambLoss = gambTxs.filter(function(t){return t.type==='expense'}).reduce(function(s,t){return s+t.amount},0);
+  var gambWin  = gambTxs.filter(function(t){return t.type==='income'}).reduce(function(s,t){return s+t.amount},0);
+  var gambNet  = gambWin - gambLoss;
+  var gambCol  = gambNet >= 0 ? '#34d399' : '#f87171';
+  var winRate  = (gambTxs.filter(function(t){return t.type==='income'}).length /
+                 Math.max(1, gambTxs.length) * 100).toFixed(0);
+
+  // session rows (group by date)
+  var sessionMap = {};
+  gambTxs.forEach(function(t){
+    if (!sessionMap[t.date]) sessionMap[t.date] = {in:0,out:0};
+    if (t.type==='income') sessionMap[t.date].in += t.amount;
+    else sessionMap[t.date].out += t.amount;
+  });
+  var sessionDates = Object.keys(sessionMap).sort(function(a,b){return new Date(b)-new Date(a)});
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  var sessionRows = sessionDates.map(function(d){
+    var s = sessionMap[d];
+    var net = s.in - s.out;
+    var col = net >= 0 ? '#34d399' : '#f87171';
+    var dp  = d.split('-');
+    var label = parseInt(dp[2]) + ' ' + months[parseInt(dp[1])-1];
+    return '<div class="card-row" style="margin-bottom:8px">'
+      + '<div style="display:flex;align-items:center;gap:14px">'
+      + '<div class="icon-wrap" style="background:rgba(168,85,247,.1)">🎲</div>'
+      + '<div><div style="font-size:13px;font-weight:500;color:#e2e8f0">Session — '+label+'</div>'
+      + '<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#475569;margin-top:3px">'
+      + 'In: '+fmt(s.in)+' · Out: '+fmt(s.out)+'</div></div></div>'
+      + '<div style="font-size:14px;font-weight:700;color:'+col+'">'+(net>=0?'+':'')+fmt(Math.abs(net))+'</div>'
+      + '</div>';
+  }).join('');
+
+  // ── INVESTMENTS ──
+  var investDeposited = txs.filter(function(t){return t.catId==='c9'&&t.type==='expense'}).reduce(function(s,t){return s+t.amount},0);
+  var investReturn    = txs.filter(function(t){return t.catId==='c9'&&t.type==='income'}).reduce(function(s,t){return s+t.amount},0);
+  var investNet       = investReturn - investDeposited;
+  var investCol       = investNet >= 0 ? '#34d399' : '#f87171';
+
+  return '<div class="title" style="margin-bottom:20px">Gambling & Investing</div>'
+
+    // ── Gambling summary card ──
+    + '<div class="card amberglow" style="margin-bottom:16px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
+    + '<span class="label">Gambling P&L</span>'
+    + '<span style="font-size:9px;font-weight:700;letter-spacing:.1em;background:rgba(168,85,247,.1);color:#c084fc;padding:3px 8px;border-radius:4px">Win Rate '+winRate+'%</span>'
+    + '</div>'
+    + '<div style="font-size:40px;font-weight:600;color:'+gambCol+';letter-spacing:-.02em">'+(isDiscreet?'••••':(gambNet>=0?'+':'')+fmt(Math.abs(gambNet)))+'</div>'
+    + '<div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;border-top:1px solid rgba(255,255,255,.06);padding-top:16px">'
+    + '<div><div class="nw-cell-label">Total Staked</div><div class="nw-cell-val" style="color:#f87171">'+fmt(gambLoss)+'</div></div>'
+    + '<div><div class="nw-cell-label">Total Returned</div><div class="nw-cell-val" style="color:#34d399">'+fmt(gambWin)+'</div></div>'
+    + '</div></div>'
+
+    // ── Session log ──
+    + '<div style="margin-bottom:24px"><div class="sec-hdr"><span class="sec-title">Session Log</span></div>'
+    + (sessionRows || '<div style="font-size:12px;color:#475569;text-align:center;padding:16px">No sessions recorded</div>')
+    + '</div>'
+
+    // ── Investments ──
+    + '<div class="sec-hdr"><span class="sec-title">Investments</span></div>'
+    + '<div class="card" style="margin-bottom:12px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    + '<span class="label">Portfolio P&L</span>'
+    + '<span style="font-size:14px;font-weight:700;color:'+investCol+'">'+(isDiscreet?'••••':(investNet>=0?'+':'')+fmt(Math.abs(investNet)))+'</span>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
+    + '<div><div class="nw-cell-label">Deployed</div><div class="nw-cell-val">'+fmt(investDeposited)+'</div></div>'
+    + '<div><div class="nw-cell-label">Returned</div><div class="nw-cell-val">'+fmt(investReturn)+'</div></div>'
+    + '</div></div>'
+    + '<div class="card-row" style="margin-bottom:8px">'
+    + '<div style="display:flex;align-items:center;gap:14px">'
+    + '<div class="icon-wrap" style="background:rgba(52,211,153,.1)">🏦</div>'
+    + '<div><div style="font-size:13px;font-weight:500;color:#e2e8f0">JustMarkets</div>'
+    + '<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#475569;margin-top:3px">Forex / CFD</div></div></div>'
+    + '<div style="text-align:right"><div style="font-size:13px;font-weight:600;color:#f1f5f9">'+fmt(investDeposited)+'</div>'
+    + '<div style="font-size:9px;color:#475569;margin-top:3px;font-weight:600">Deposited</div></div></div>';
+}
+
+// ── LEDGER TAB (inline, always scrollable) ────────────────────────────
+function renderLedgerTab() {
+  var sorted = txs.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date)});
+  var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var lastDate = '';
+  var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
+    + '<div class="title">Ledger</div>'
+    + '<span style="font-size:9px;color:#475569;font-weight:600">'+txs.length+' entries</span>'
+    + '</div>';
+
+  sorted.forEach(function(tx) {
+    if (tx.date !== lastDate) {
+      var dp  = tx.date.split('-');
+      var lbl = parseInt(dp[2]) + ' ' + MONTH_NAMES[parseInt(dp[1])-1] + ' ' + dp[0];
+      var dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(tx.date).getDay()];
+      html += '<div style="font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;'
+        + 'color:#475569;margin:16px 0 8px;padding:0 2px">'+dow+', '+lbl+'</div>';
+      lastDate = tx.date;
+    }
+    html += txRow(tx, true);
+  });
+
+  return html;
+}
+
+
+function renderLedgerBody() {
+  var sorted = txs.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date)});
+  var months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var lastDate = '';
+  var html = '';
+  sorted.forEach(function(tx) {
+    if (tx.date !== lastDate) {
+      var dp = tx.date.split('-');
+      var dayLabel = parseInt(dp[2]) + ' ' + months[parseInt(dp[1])-1] + ' ' + dp[0];
+      var dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(tx.date).getDay()];
+      html += '<div style="font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#475569;margin:16px 0 8px;padding:0 2px">'
+        + dow + ', ' + dayLabel + '</div>';
+      lastDate = tx.date;
+    }
+    html += txRow(tx, true);
+  });
+  return html;
+}
+
+function openLedger() {
+  var el = document.getElementById('app');
+  var fs = document.createElement('div');
+  fs.className = 'fullscreen';
+  fs.id = 'ledger-fs';
+  fs.innerHTML = '<div class="fs-header">'
+    + '<div class="fs-title">Full Ledger</div>'
+    + '<button class="fs-close" onclick="closeLedger()">✕</button>'
+    + '</div>'
+    + '<div class="fs-body" id="ledger-body">'
+    + renderLedgerBody()
+    + '</div>';
+  el.appendChild(fs);
+}
+
+function closeLedger() {
+  var el = document.getElementById('ledger-fs');
+  if (el) el.parentNode.removeChild(el);
+}
+
+function deleteTx(id) {
+  if (!confirm('Delete this entry?')) return;
+  txs = txs.filter(function(t){return t.id !== id});
+  saveTxs();
+  render();
+  // also refresh fullscreen ledger overlay if open
+  var lb = document.getElementById('ledger-body');
+  if (lb) lb.innerHTML = renderLedgerBody();
+}
+
+function editTx(id) {
+  var tx = txs.find(function(t){return t.id===id});
+  if (!tx) return;
+  var newVal = prompt('Edit amount (' + tx.cur + '):', tx.orig);
+  if (newVal === null) return;
+  var parsed = parseFloat(newVal);
+  if (isNaN(parsed)) return;
+  tx.orig   = parsed;
+  tx.amount = tx.cur === 'MYR' ? parsed / liveRate : parsed;
+  saveTxs();
+  render();
+  var lb = document.getElementById('ledger-body');
+  if (lb) lb.innerHTML = renderLedgerBody();
+}
+
+// ── ADD TRANSACTION MODAL ─────────────────────────────────────────────
+
+function openModal() {
+  txType = 'expense'; payMethod = 'cash'; inputCur = 'SGD';
+  selectedCatId = ''; mealType = ''; laundryType = '';
+  renderModal();
+}
+
+function closeModal() {
+  var el = document.getElementById('tx-modal');
+  if (el) el.parentNode.removeChild(el);
+}
+
+function renderModal() {
+  var old = document.getElementById('tx-modal');
+  if (old) old.parentNode.removeChild(old);
+
+  var incomeCats = CATS.filter(function(c){return c.type==='income'||c.type==='mixed'});
+  var expCats    = CATS.filter(function(c){return c.type!=='income'});
+  var showCats   = (txType==='expense') ? expCats : incomeCats;
+
+  var typeTabs = [['expense','Expense'],['income','Income'],['profit','Profit'],['loss','Loss']].map(function(t){
+    var cls = 'type-tab';
+    if (txType===t[0]) cls += ' on-'+t[0];
+    return '<button class="'+cls+'" onclick="setTxType(\''+t[0]+'\')">'+t[1]+'</button>';
+  }).join('');
+
+  var curToggle = '<div class="cur-toggle">'
+    + '<button class="cur-btn'+(inputCur==='SGD'?' on':'')+'" onclick="setInputCur(\'SGD\')">SGD</button>'
+    + '<button class="cur-btn'+(inputCur==='MYR'?' on':'')+'" onclick="setInputCur(\'MYR\')">MYR</button>'
+    + '</div>';
+
+  var payTabs = txType==='expense'
+    ? '<div style="margin-bottom:20px"><div class="form-label">Payment Source</div>'
+      + '<div class="pay-tabs">'
+      + '<button class="pay-tab'+(payMethod==='cash'?' on-cash':'')+'" onclick="setPayMethod(\'cash\')">Bank/PayNow</button>'
+      + '<button class="pay-tab'+(payMethod==='wallet'?' on-wallet':'')+'" onclick="setPayMethod(\'wallet\')">Cash Wallet</button>'
+      + '<button class="pay-tab'+(payMethod==='card'?' on-card':'')+'" onclick="setPayMethod(\'card\')">UOB World</button>'
+      + '</div></div>'
+    : '';
+
+  var catGrid = '<div style="margin-bottom:20px"><div class="form-label">Classification</div>'
+    + '<div class="cat-grid">'
+    + showCats.map(function(c){
+        return '<button class="cat-btn'+(selectedCatId===c.id?' sel':'')+'" onclick="selectCat(\''+c.id+'\')">'
+          + '<span class="ci">'+c.icon+'</span>'
+          + '<span>'+c.name+'</span></button>';
+      }).join('')
+    + '</div></div>';
+
+  var mealPick = selectedCatId==='c5'
+    ? '<div style="margin-bottom:20px"><div class="form-label">Meal Type</div>'
+      + '<div class="sub-tabs">'
+      + ['Breakfast','Lunch','Dinner'].map(function(m){
+          return '<button class="sub-tab'+(mealType===m?' on':'')+'" onclick="setMeal(\''+m+'\')">'+m+'</button>';
+        }).join('')
+      + '</div></div>'
+    : '';
+
+  var atmSGDPick = selectedCatId==='c15' && inputCur==='MYR'
+    ? '<div style="margin-bottom:20px"><div class="form-label">SGD Cash Received</div>'
+      + '<div style="display:flex;align-items:center;gap:8px;background:#12141a;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 16px">'
+      + '<span style="font-size:16px;font-weight:700;color:#475569">S$</span>'
+      + '<input type="number" id="atm-sgd-input" step="any" inputmode="decimal" placeholder="150.00" style="background:none;border:none;font-size:20px;font-weight:600;color:#f1f5f9;flex:1;outline:none;min-width:0">'
+      + '</div>'
+      + '<div style="font-size:9px;color:#475569;margin-top:6px;font-weight:600">The actual SGD notes you received at the ATM</div>'
+      + '</div>'
+    : '';
+
+  var laundryPick = selectedCatId==='c18'
+    ? '<div style="margin-bottom:20px"><div class="form-label">Laundry Type</div>'
+      + '<div class="sub-tabs">'
+      + ['Washer','Dryer'].map(function(l){
+          return '<button class="sub-tab'+(laundryType===l?' on-sky':'')+'" onclick="setLaundry(\''+l+'\')">'+l+'</button>';
+        }).join('')
+      + '</div></div>'
+    : '';
+
+  var el = document.createElement('div');
+  el.id = 'tx-modal';
+  el.className = 'modal-bg';
+  el.innerHTML = '<div class="modal-sheet">'
+    + '<div class="modal-handle"></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">'
+    + '<div class="modal-title" style="margin:0">New Entry</div>'
+    + '<button class="modal-close" onclick="closeModal()">✕</button>'
+    + '</div>'
+    + '<div class="type-tabs">'+typeTabs+'</div>'
+    + '<div style="margin-bottom:20px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px">'
+    + '<div class="form-label">Entry Amount</div>'+curToggle+'</div>'
+    + '<div class="amount-wrap">'
+    + '<span class="currency-sym">'+(inputCur==='SGD'?'$':'RM')+'</span>'
+    + '<input type="number" id="amt-input" class="amount-input" placeholder="0.00" step="any" inputmode="decimal">'
+    + '</div>'
+    + '<div id="rate-hint" style="font-size:10px;color:rgba(251,191,36,.8);font-weight:500;margin-top:4px;height:16px"></div>'
+    + '</div>'
+    + payTabs
+    + catGrid
+    + mealPick
+    + laundryPick
+    + atmSGDPick
+    + '<div class="form-row" style="margin-bottom:4px">'
+    + '<div><label class="form-label">Reference Note</label><input type="text" id="note-input" class="form-input" placeholder="e.g. Client Dinner"></div>'
+    + '<div><label class="form-label">Date (YYYY-MM-DD)</label><input type="text" id="date-input" class="form-input" placeholder="'+new Date().toISOString().slice(0,10)+'"></div>'
+    + '</div>'
+    + '<button class="submit-btn" onclick="submitTx()">Authorize Entry</button>'
+    + '</div>';
+
+  document.getElementById('app').appendChild(el);
+
+  var amtEl = document.getElementById('amt-input');
+  if (amtEl) {
+    amtEl.addEventListener('input', function(){
+      var hint = document.getElementById('rate-hint');
+      if (!hint) return;
+      if (inputCur === 'MYR' && this.value) {
+        hint.textContent = '≈ S$' + (parseFloat(this.value)/liveRate).toFixed(2) + ' (Rate: ' + liveRate.toFixed(4) + ')';
+      } else {
+        hint.textContent = '';
+      }
+    });
+    amtEl.focus();
+  }
+}
+
+function setTxType(t)        { txType=t; selectedCatId=''; mealType=''; laundryType=''; renderModal(); }
+function setPayMethod(m)     { payMethod=m; renderModal(); }
+function setInputCur(c)      { inputCur=c; renderModal(); }
+function selectCat(id)       { selectedCatId=id; mealType=''; laundryType=''; renderModal(); }
+function setMeal(m)          { mealType=m; renderModal(); }
+function setLaundry(l)       { laundryType=l; renderModal(); }
+function setBudgetFilter(f)  { budgetFilter=f; render(); }
+function setSelectedMonth(ym){ selectedMonth=ym; render(); }
+
+function submitTx() {
+  var amtEl  = document.getElementById('amt-input');
+  var noteEl = document.getElementById('note-input');
+  var dateEl = document.getElementById('date-input');
+  if (!amtEl || !selectedCatId) { alert('Please fill in amount and select a category.'); return; }
+
+  var origAmt = parseFloat(amtEl.value);
+  if (isNaN(origAmt) || origAmt <= 0) { alert('Please enter a valid amount.'); return; }
+
+  var sgdAmt   = inputCur === 'MYR' ? origAmt / liveRate : origAmt;
+  var note     = (noteEl && noteEl.value) || 'Ledger Entry';
+  var txDate   = (dateEl && dateEl.value && dateEl.value.match(/^\d{4}-\d{2}-\d{2}$/))
+                 ? dateEl.value
+                 : new Date().toISOString().slice(0,10);
+  var finalType = txType === 'profit' ? 'pnl_profit' : txType === 'loss' ? 'pnl_loss' : txType;
+
+  var newTx = {
+    id:      Date.now(),
+    date:    txDate,
+    amount:  sgdAmt,
+    orig:    origAmt,
+    cur:     inputCur,
+    catId:   selectedCatId,
+    type:    finalType,
+    pay:     txType === 'expense' ? payMethod : 'cash',
+    note:    note,
+    acct:    payMethod === 'wallet' ? 'cash' : 'bank'
+  };
+
+  if (selectedCatId === 'c15' && inputCur === 'MYR') {
+    var sgdRecEl = document.getElementById('atm-sgd-input');
+    if (sgdRecEl && sgdRecEl.value) {
+      newTx.atmSGD = parseFloat(sgdRecEl.value) || sgdAmt;
+    }
+  }
+
+  if (mealType) newTx.meal = mealType;
+  if (laundryType) newTx.laundry = laundryType;
+
+  txs.unshift(newTx);
+  txs.sort(function(a,b){return new Date(b.date)-new Date(a.date)});
+  saveTxs();
+  closeModal();
+  render();
+}
+
+// ── EXPORT & BACKUP PANEL (Rec 9) ────────────────────────────────────
+
+function openBackup() {
+  var old = document.getElementById('backup-fs');
+  if (old) old.parentNode.removeChild(old);
+
+  var fs = document.createElement('div');
+  fs.id = 'backup-fs';
+  fs.className = 'fullscreen';
+  fs.innerHTML = '<div class="fs-header">'
+    + '<div class="fs-title">⚙️ Export & Backup</div>'
+    + '<button class="fs-close" onclick="closeBackup()">✕</button>'
+    + '</div>'
+    + '<div class="fs-body" style="gap:16px">'
+
+    // ── Export CSV ──
+    + '<div class="card-sm">'
+    + '<div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px">Export Transactions — CSV</div>'
+    + '<div style="font-size:11px;color:#475569;margin-bottom:16px;line-height:1.6">Download all ledger entries as a .csv file. Open directly in Excel or Google Sheets for further analysis.</div>'
+    + '<div style="display:flex;gap:10px;flex-wrap:wrap">'
+    + '<button onclick="exportCSV(\'all\')" style="flex:1;min-width:100px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);border-radius:12px;padding:12px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#34d399;cursor:pointer">All Time</button>'
+    + '<button onclick="exportCSV(\'month\')" style="flex:1;min-width:100px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.15);border-radius:12px;padding:12px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fbbf24;cursor:pointer">Current Month</button>'
+    + '</div></div>'
+
+    // ── Monthly Summary PDF-style ──
+    + '<div class="card-sm">'
+    + '<div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px">Monthly Summary — HTML Report</div>'
+    + '<div style="font-size:11px;color:#475569;margin-bottom:16px;line-height:1.6">Generate a self-contained HTML report for the current month — printable and shareable. Open in any browser and use Print → Save as PDF.</div>'
+    + '<button onclick="exportMonthlyReport()" style="width:100%;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:12px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a5b4fc;cursor:pointer">Generate Report</button>'
+    + '</div>'
+
+    // ── JSON Backup ──
+    + '<div class="card-sm">'
+    + '<div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px">Full Data Backup — JSON</div>'
+    + '<div style="font-size:11px;color:#475569;margin-bottom:16px;line-height:1.6">Download a complete snapshot of all your transaction data as a JSON file. Keep this safe — it can be used to restore your dashboard on any device.</div>'
+    + '<button onclick="exportJSON()" style="width:100%;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.15);border-radius:12px;padding:12px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fbbf24;cursor:pointer">Download Backup</button>'
+    + '</div>'
+
+    // ── Restore ──
+    + '<div class="card-sm">'
+    + '<div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px">Restore from Backup</div>'
+    + '<div style="font-size:11px;color:#475569;margin-bottom:16px;line-height:1.6">Upload a previously downloaded JSON backup to restore your full transaction history. This will overwrite your current data — make a backup first if needed.</div>'
+    + '<label style="display:block;width:100%;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:12px;padding:12px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#f87171;cursor:pointer;text-align:center">'
+    + 'Upload JSON Backup'
+    + '<input type="file" accept=".json" onchange="restoreJSON(event)" style="display:none">'
+    + '</label>'
+    + '</div>'
+
+    // ── Storage info ──
+    + '<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:16px">'
+    + '<div style="font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#475569;margin-bottom:8px">Storage Info</div>'
+    + '<div style="font-size:11px;color:#64748b;line-height:1.7">'
+    + 'Your data is stored in browser localStorage on this device only.<br>'
+    + 'Transactions: <span style="color:#cbd5e1;font-weight:600" id="tx-count">—</span> entries<br>'
+    + 'Estimated size: <span style="color:#cbd5e1;font-weight:600" id="storage-size">—</span>'
+    + '</div>'
+    + '</div>'
+
+    + '</div>';
+
+  document.getElementById('app').appendChild(fs);
+
+  // Populate storage info
+  try {
+    var raw = localStorage.getItem('pw_v12') || JSON.stringify(txs);
+    document.getElementById('tx-count').textContent = txs.length;
+    document.getElementById('storage-size').textContent = (raw.length / 1024).toFixed(1) + ' KB';
+  } catch(e){}
+}
+
+function closeBackup() {
+  var el = document.getElementById('backup-fs');
+  if (el) el.parentNode.removeChild(el);
+}
+
+function dlBlob(content, filename, mime) {
+  var blob = new Blob([content], {type: mime});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 500);
+}
+
+function exportCSV(scope) {
+  var now = new Date();
+  var ym  = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'));
+  var data = scope === 'month'
+    ? txs.filter(function(t){ return t.date && t.date.slice(0,7) === ym; })
+    : txs;
+
+  var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var header = 'Date,Category,Type,Payment,Currency,Original Amount,SGD Amount,Note,Meal,Laundry\n';
+  var rows = data.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date)}).map(function(t){
+    var c = cat(t.catId);
+    var dp = (t.date||'').split('-');
+    var dateLabel = dp.length===3 ? (parseInt(dp[2])+' '+MONTH_NAMES[parseInt(dp[1])-1]+' '+dp[0]) : t.date;
+    return [
+      dateLabel,
+      c.name,
+      t.type,
+      t.pay === 'wallet' ? 'Cash' : t.pay === 'card' ? 'UOB Card' : 'Bank',
+      t.cur || 'SGD',
+      (t.orig || t.amount).toFixed(2),
+      t.amount.toFixed(4),
+      '"'+(t.note||'').replace(/"/g,"''")+'"',
+      t.meal || '',
+      t.laundry || ''
+    ].join(',');
+  }).join('\n');
+
+  var filename = scope === 'month'
+    ? 'wealth-'+ym+'.csv'
+    : 'wealth-all-time.csv';
+  dlBlob(header + rows, filename, 'text/csv');
+}
+
+function exportJSON() {
+  var ts = new Date().toISOString().slice(0,10);
+  dlBlob(JSON.stringify({version:'pw_v12', exported:ts, transactions:txs}, null, 2),
+    'wealth-backup-'+ts+'.json', 'application/json');
+}
+
+function exportMonthlyReport() {
+  var now = new Date();
+  var ym  = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'));
+  var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var parts = ym.split('-');
+  var monthLabel = MONTH_NAMES[parseInt(parts[1])-1] + ' ' + parts[0];
+
+  var mdata = txs.filter(function(t){ return t.date && t.date.slice(0,7) === ym; })
+                 .slice().sort(function(a,b){return new Date(a.date)-new Date(b.date)});
+
+  var mc   = calcForMonth(ym);
+  var ds   = dailySpendInfo();
+
+  var txRows = mdata.map(function(t){
+    var c = cat(t.catId);
+    var dp = (t.date||'').split('-');
+    var dateLabel = dp.length===3 ? (parseInt(dp[2])+' '+MONTH_NAMES[parseInt(dp[1])-1]) : t.date;
+    var isPos = t.type === 'income';
+    var sym  = isPos ? '+' : '-';
+    var amt  = 'S$'+t.amount.toFixed(2);
+    var orig = (t.cur && t.cur !== 'SGD') ? ' ('+t.cur+' '+t.orig.toFixed(2)+')' : '';
+    return '<tr><td>'+dateLabel+'</td><td>'+c.icon+' '+c.name+'</td><td>'+t.note+'</td>'
+      + '<td style="color:'+(isPos?'#16a34a':'#dc2626');'font-weight:600">'+sym+amt+orig+'</td></tr>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    + '<title>Private Wealth — '+monthLabel+'</title>'
+    + '<style>body{font-family:-apple-system,sans-serif;max-width:800px;margin:40px auto;padding:20px;color:#1e293b}'
+    + 'h1{font-size:24px;font-weight:700;margin-bottom:4px}h2{font-size:16px;font-weight:600;margin:24px 0 12px;border-bottom:1px solid #e2e8f0;padding-bottom:8px}'
+    + '.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}'
+    + '.stat{background:#f8fafc;border-radius:12px;padding:16px}.stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:4px}'
+    + '.stat-val{font-size:20px;font-weight:700}'
+    + 'table{width:100%;border-collapse:collapse}td,th{padding:10px 12px;text-align:left;border-bottom:1px solid #f1f5f9;font-size:13px}'
+    + 'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;background:#f8fafc}'
+    + '.footer{margin-top:32px;font-size:11px;color:#94a3b8;text-align:center}'
+    + '</style></head><body>'
+    + '<h1>Private Wealth</h1><p style="color:#64748b;font-size:13px">Monthly Report — '+monthLabel+'</p>'
+    + '<div class="grid">'
+    + '<div class="stat"><div class="stat-label">Total Income</div><div class="stat-val" style="color:#16a34a">S$'+mc.totalIncome.toFixed(2)+'</div></div>'
+    + '<div class="stat"><div class="stat-label">Total Expenses</div><div class="stat-val" style="color:#dc2626">S$'+mc.totalExp.toFixed(2)+'</div></div>'
+    + '<div class="stat"><div class="stat-label">Net Savings</div><div class="stat-val" style="color:'+(mc.savingsNet>=0?'#16a34a':'#dc2626')+'">S$'+mc.savingsNet.toFixed(2)+'</div></div>'
+    + '</div>'
+    + '<h2>Transaction Log</h2>'
+    + '<table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th></tr></thead>'
+    + '<tbody>'+txRows+'</tbody></table>'
+    + '<div class="footer">Generated '+new Date().toLocaleString()+' · Private Wealth Dashboard</div>'
+    + '</body></html>';
+
+  dlBlob(html, 'wealth-report-'+ym+'.html', 'text/html');
+}
+
+function restoreJSON(evt) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      var restored = data.transactions || data;
+      if (!Array.isArray(restored)) throw new Error('Invalid format');
+      if (!confirm('Restore '+restored.length+' transactions? Your current data will be replaced.')) return;
+      txs = restored;
+      saveTxs();
+      closeBackup();
+      render();
+      alert('Restore successful. '+restored.length+' transactions loaded.');
+    } catch(err) {
+      alert('Restore failed: invalid or corrupted backup file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+
+
+function cycleCurrency() {
+  var order = ['SGD','MYR'];
+  baseCur = order[(order.indexOf(baseCur)+1) % order.length];
+  render();
+}
+
+// ── MAIN RENDER ───────────────────────────────────────────────────────
+
+function render() {
+  var main = document.getElementById('main');
+  if (!main) return;
+  if (activeTab === 'home')     main.innerHTML = renderHome();
+  if (activeTab === 'budget')   main.innerHTML = renderBudget();
+  if (activeTab === 'ledger')   main.innerHTML = renderLedgerTab();
+  if (activeTab === 'insights') main.innerHTML = renderInsights();
+  if (activeTab === 'gamble')   main.innerHTML = renderGamble();
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.nav-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+      activeTab = btn.dataset.tab;
+      render();
+    });
+  });
+
+  document.getElementById('fab').addEventListener('click', openModal);
+
+  document.getElementById('eye-btn').addEventListener('click', function() {
+    isDiscreet = !isDiscreet;
+    this.textContent = isDiscreet ? '🙈' : '👁';
+    render();
+  });
+
+  document.addEventListener('touchmove', function(e) {
+    var scrollable = e.target.closest('#main,.scroll,.fs-body,.modal-sheet,.cat-grid,.chips,.pay-tabs,.type-tabs');
+    if (!scrollable && e.cancelable) e.preventDefault();
+  }, {passive: false});
+
+  fetch('https://open.er-api.com/v6/latest/SGD')
+    .then(function(r){return r.json()})
+    .then(function(d){if(d&&d.rates&&d.rates.MYR) liveRate=d.rates.MYR;})
+    .catch(function(){})
+    .finally(function(){ render(); });
+
+  render();
+});
+</script>
+</body>
+</html>
